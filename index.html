@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOYONIKA PALIT | A Curated Exhibition</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Work+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { height:100%; scroll-behavior:auto; }
+body { height:100%; background:#080808; color:#f9f9f9; overflow-x:hidden; font-family:'Work Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:#111; }
+::-webkit-scrollbar-thumb { background:#444; }
+
+/* ── Loader ── */
+#loader {
+  position:fixed; inset:0; z-index:1000; background:#080808;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition: opacity 1.2s ease, visibility 1.2s ease;
+}
+#loader.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+#loader .label { font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.25em; color:#747878; text-transform:uppercase; }
+#loader-bar { width:180px; height:1px; background:#222; margin-top:20px; overflow:hidden; }
+#loader-fill { width:0; height:100%; background:#f9f9f9; transition: width 0.4s ease; }
+
+/* ── Three.js Canvas ── */
+#gallery-canvas { position:fixed; inset:0; z-index:1; }
+#gallery-canvas canvas { display:block; width:100%!important; height:100%!important; }
+
+/* ── Scroll Driver ── */
+#scroll-container { position:relative; z-index:2; pointer-events:none; }
+.scroll-spacer { height:100vh; }
+
+/* ── Content Panels ── */
+.room-overlay {
+  position:fixed; inset:0; z-index:10; display:flex; align-items:center;
+  padding:80px; pointer-events:none; opacity:0;
+  transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1);
+}
+.room-overlay.active { opacity:1; pointer-events:auto; }
+.room-overlay.center { justify-content:center; text-align:center; }
+.room-overlay.left { justify-content:flex-start; }
+.room-overlay.right { justify-content:flex-end; }
+
+.panel {
+  background:rgba(249,249,249,0.92); backdrop-filter:blur(24px) saturate(1.2);
+  color:#1a1c1c; border:1px solid rgba(116,120,120,0.25); max-width:560px; width:100%;
+  padding:48px; position:relative;
+}
+.panel-wide { max-width:800px; }
+.panel-full { max-width:1000px; }
+.panel::before {
+  content:''; position:absolute; top:0; left:0; width:100%; height:2px; background:#1a1c1c;
+}
+.panel-dark {
+  background:rgba(20,20,20,0.92); color:#f0f0f0; border-color:rgba(120,120,120,0.2);
+}
+.panel-dark::before { background:#f0f0f0; }
+
+/* ── Typography ── */
+.f-display { font-family:'Playfair Display',serif; font-size:clamp(36px,6vw,72px); font-weight:700; line-height:1.05; letter-spacing:-0.02em; }
+.f-headline { font-family:'Playfair Display',serif; font-size:clamp(28px,3.5vw,48px); font-weight:600; line-height:1.2; }
+.f-headline-sm { font-family:'Playfair Display',serif; font-size:clamp(20px,2.5vw,28px); font-weight:500; line-height:1.35; }
+.f-body { font-family:'Work Sans',sans-serif; font-size:16px; font-weight:400; line-height:1.7; }
+.f-body-lg { font-family:'Work Sans',sans-serif; font-size:18px; font-weight:400; line-height:1.75; }
+.f-label { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:500; letter-spacing:0.1em; text-transform:uppercase; }
+.f-label-lg { font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:500; letter-spacing:0.06em; }
+
+/* ── Utilities ── */
+.text-muted { color:#747878; }
+.text-muted-light { color:#a0a0a0; }
+.mt-16 { margin-top:16px; } .mt-24 { margin-top:24px; } .mt-32 { margin-top:32px; } .mt-48 { margin-top:48px; }
+.mb-8 { margin-bottom:8px; } .mb-12 { margin-bottom:12px; } .mb-16 { margin-bottom:16px; } .mb-24 { margin-bottom:24px; } .mb-32 { margin-bottom:32px; }
+.line { height:1px; background:rgba(116,120,120,0.3); width:100%; margin:24px 0; }
+.line-dark { background:rgba(200,200,200,0.15); }
+
+/* ── Exhibit Cards ── */
+.exhibit-grid { display:grid; grid-template-columns:1fr; gap:20px; }
+@media(min-width:640px) { .exhibit-grid { grid-template-columns:1fr 1fr; } }
+.exhibit-card {
+  border:1px solid rgba(116,120,120,0.25); padding:28px; position:relative;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), border-color 0.3s;
+}
+.exhibit-card:hover { transform:translateY(-3px); border-color:#1a1c1c; }
+.exhibit-card .num { font-family:'JetBrains Mono',monospace; font-size:10px; color:#747878; letter-spacing:0.15em; margin-bottom:12px; }
+
+/* ── Skill Bar ── */
+.skill-item { display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid rgba(116,120,120,0.15); }
+.skill-item:last-child { border-bottom:none; }
+.skill-bar-track { flex:1; height:2px; background:rgba(116,120,120,0.15); overflow:hidden; }
+.skill-bar-fill { height:100%; background:#1a1c1c; transform:scaleX(0); transform-origin:left; transition: transform 1.2s cubic-bezier(0.16,1,0.3,1); }
+.room-overlay.active .skill-bar-fill { transform:scaleX(1); }
+
+/* ── Timeline List ── */
+.timeline-entry { display:grid; grid-template-columns:100px 1fr auto; gap:20px; align-items:start; padding:20px 0; border-bottom:1px solid rgba(116,120,120,0.15); }
+.timeline-entry:last-child { border-bottom:none; }
+
+/* ── Contact ── */
+.contact-link { display:flex; align-items:center; gap:12px; padding:10px 0; color:#1a1c1c; text-decoration:none; transition: opacity 0.3s; }
+.contact-link:hover { opacity:0.6; }
+
+/* ── Room Indicator ── */
+#room-indicator {
+  position:fixed; bottom:32px; left:50%; transform:translateX(-50%); z-index:20;
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.2em;
+  color:rgba(249,249,249,0.5); text-transform:uppercase;
+  transition: color 0.5s;
+}
+
+/* ── Nav Dots ── */
+#nav-dots {
+  position:fixed; right:32px; top:50%; transform:translateY(-50%); z-index:20;
+  display:flex; flex-direction:column; gap:12px;
+}
+.nav-dot {
+  width:8px; height:8px; border:1px solid rgba(249,249,249,0.3); background:transparent;
+  cursor:pointer; transition: all 0.4s; position:relative;
+}
+.nav-dot.active { background:rgba(249,249,249,0.9); border-color:rgba(249,249,249,0.9); }
+.nav-dot::after {
+  content:attr(data-label); position:absolute; right:20px; top:50%; transform:translateY(-50%);
+  font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; color:rgba(249,249,249,0.4);
+  white-space:nowrap; opacity:0; transition:opacity 0.3s; pointer-events:none;
+}
+.nav-dot:hover::after { opacity:1; }
+
+/* ── Scroll Cue ── */
+#scroll-cue {
+  position:fixed; bottom:60px; left:50%; transform:translateX(-50%); z-index:15;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  animation: cue-pulse 2s ease-in-out infinite;
+}
+#scroll-cue .line-anim { width:1px; height:32px; background:linear-gradient(to bottom,transparent,rgba(249,249,249,0.5)); }
+@keyframes cue-pulse { 0%,100%{opacity:0.4;transform:translateX(-50%) translateY(0)} 50%{opacity:0.8;transform:translateX(-50%) translateY(5px)} }
+
+/* ── Gallery Map ── */
+#map-btn {
+  position:fixed; top:32px; right:32px; z-index:25; background:none; border:1px solid rgba(249,249,249,0.2);
+  color:rgba(249,249,249,0.6); font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em;
+  padding:8px 16px; cursor:pointer; transition:all 0.3s; text-transform:uppercase;
+}
+#map-btn:hover { border-color:rgba(249,249,249,0.6); color:#f9f9f9; }
+
+/* ── Responsive ── */
+@media(max-width:768px) {
+  .room-overlay { padding:24px; }
+  .panel { padding:28px; max-width:100%; }
+  .panel-wide, .panel-full { max-width:100%; }
+  #nav-dots { display:none; }
+  .exhibit-grid { grid-template-columns:1fr; }
+  .timeline-entry { grid-template-columns:1fr; gap:4px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ LOADER ═══════════════════════════ -->
+<div id="loader">
+  <div class="label">Entering the Gallery</div>
+  <div id="loader-bar"><div id="loader-fill"></div></div>
+</div>
+
+<!-- ═══════════════════════════ THREE.JS CANVAS ═══════════════════════════ -->
+<div id="gallery-canvas"></div>
+
+<!-- ═══════════════════════════ SCROLL CUE ═══════════════════════════ -->
+<div id="scroll-cue">
+  <span class="f-label" style="font-size:9px;color:rgba(249,249,249,0.4);">Scroll</span>
+  <div class="line-anim"></div>
+</div>
+
+<!-- ═══════════════════════════ NAV DOTS ═══════════════════════════ -->
+<div id="nav-dots">
+  <div class="nav-dot active" data-room="0" data-label="ENTRANCE"></div>
+  <div class="nav-dot" data-room="1" data-label="THE FOYER"></div>
+  <div class="nav-dot" data-room="2" data-label="EXHIBITION HALL"></div>
+  <div class="nav-dot" data-room="3" data-label="CURATIONS"></div>
+  <div class="nav-dot" data-room="4" data-label="THE ARCHIVES"></div>
+  <div class="nav-dot" data-room="5" data-label="TOOLKIT"></div>
+  <div class="nav-dot" data-room="6" data-label="GUESTBOOK"></div>
+</div>
+
+<!-- ═══════════════════════════ ROOM INDICATOR ═══════════════════════════ -->
+<div id="room-indicator">[ 00. ENTRANCE ]</div>
+
+<!-- ═══════════════════════════ MAP BUTTON ═══════════════════════════ -->
+<button id="map-btn">Map</button>
+
+<!-- ═══════════════════════════ CONTENT OVERLAYS ═══════════════════════════ -->
+
+<!-- ROOM 0: ENTRANCE -->
+<div class="room-overlay center active" id="overlay-0">
+  <div style="max-width:700px;">
+    <p class="f-label mb-24" style="color:rgba(249,249,249,0.35);">[ A Curated Exhibition ]</p>
+    <h1 class="f-display" style="color:#f9f9f9; margin-bottom:28px;">NOYONIKA<br>PALIT</h1>
+    <p class="f-body-lg" style="color:rgba(249,249,249,0.55); max-width:440px; margin:0 auto;">
+      A contemporary art practitioner at the intersection of production and curation.
+    </p>
+  </div>
+</div>
+
+<!-- ROOM 1: THE FOYER -->
+<div class="room-overlay left" id="overlay-1">
+  <div class="panel">
+    <span class="f-label text-muted mb-24" style="display:block;">[ 01. Introductory Wall Text ]</span>
+    <h2 class="f-headline mb-24">The Foyer</h2>
+    <p class="f-body" style="color:#444748; margin-bottom:20px;">
+      A contemporary art practitioner interested in the intersection of production and curation. Exploring the architectural silence of the white cube through digital spatial experiences and institutional frameworks.
+    </p>
+    <p class="f-body" style="color:#444748; margin-bottom:28px;">
+      This exhibition maps a curatorial journey through institutional galleries, independent studios, and international biennales &mdash; from the Science Gallery Bengaluru to the Kochi-Muziris Biennale.
+    </p>
+    <div class="line"></div>
+    <div style="display:flex; justify-content:space-between;">
+      <span class="f-label text-muted">LAT: 12.9716&deg; N</span>
+      <span class="f-label text-muted">LON: 77.5946&deg; E</span>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM 2: EXHIBITION HALL -->
+<div class="room-overlay right" id="overlay-2">
+  <div class="panel panel-wide">
+    <span class="f-label text-muted mb-16" style="display:block;">[ 02. Exhibition Hall &mdash; Work History ]</span>
+    <h2 class="f-headline mb-32">Professional Engagements</h2>
+
+    <div style="margin-bottom:32px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+        <h3 class="f-headline-sm">Science Gallery Bengaluru</h3>
+        <span class="f-label text-muted">2021 &mdash; PRESENT</span>
+      </div>
+      <p class="f-label text-muted mb-12">Associate Curator &amp; Program Lead</p>
+      <ul class="f-body" style="color:#444748; padding-left:18px; display:flex; flex-direction:column; gap:8px;">
+        <li>Spearheaded Public Engagement strategies for <em>PSYCHE</em> and <em>CARBON</em> exhibitions, bridging local communities and global scientific research.</li>
+        <li>Curated a multi-disciplinary symposium featuring 15+ international artists and researchers exploring the ecology of urban spaces.</li>
+        <li>Developed immersive educational toolkits for university students, translating complex data into tactile gallery experiences.</li>
+      </ul>
+    </div>
+
+    <div class="line"></div>
+
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+        <h3 class="f-headline-sm">Amshu Chukki</h3>
+        <span class="f-label text-muted">2019 &mdash; 2021</span>
+      </div>
+      <p class="f-label text-muted mb-12">Art Assistant &amp; Studio Manager</p>
+      <ul class="f-body" style="color:#444748; padding-left:18px; display:flex; flex-direction:column; gap:8px;">
+        <li>Served as Art Assistant for large-scale video installations showcased at the Kochi-Muziris Biennale.</li>
+        <li>Managed complex logistical frameworks for site-specific projects across diverse topographical landscapes.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM 3: SELECTED CURATIONS -->
+<div class="room-overlay center" id="overlay-3">
+  <div class="panel panel-full">
+    <span class="f-label text-muted mb-16" style="display:block;">[ 03. Selected Curations ]</span>
+    <h2 class="f-headline mb-32" style="text-align:left;">Exhibition &amp; Research Catalog</h2>
+    <div class="exhibit-grid">
+      <div class="exhibit-card">
+        <div class="num">[ EXHIBIT_01 ]</div>
+        <h4 class="f-headline-sm mb-8">Kochi-Muziris Chronicles</h4>
+        <p class="f-body" style="color:#444748;">Large-scale biennale installation exploring postcolonial narratives through video and spatial design.</p>
+      </div>
+      <div class="exhibit-card">
+        <div class="num">[ EXHIBIT_02 ]</div>
+        <h4 class="f-headline-sm mb-8">The Science Gallery: Intersections</h4>
+        <p class="f-body" style="color:#444748;">Exploring biology through the lens of curation. Bridging scientific inquiry and artistic intervention.</p>
+      </div>
+      <div class="exhibit-card">
+        <div class="num">[ EXHIBIT_03 ]</div>
+        <h4 class="f-headline-sm mb-8">Materiality &amp; Silence</h4>
+        <p class="f-body" style="color:#444748;">An immersive study of white space in curatorial practices, referencing O'Doherty and the evolution of the gallery space.</p>
+      </div>
+      <div class="exhibit-card">
+        <div class="num">[ ESSAY ]</div>
+        <h4 class="f-headline-sm mb-8">Digital Disruption in Traditional Spaces</h4>
+        <span class="f-label text-muted">2023.11.12 &mdash; Essay / Research</span>
+      </div>
+      <div class="exhibit-card">
+        <div class="num">[ SYMPOSIUM ]</div>
+        <h4 class="f-headline-sm mb-8">The Ethics of the Curated Object</h4>
+        <span class="f-label text-muted">2022.08.05 &mdash; Symposium</span>
+      </div>
+      <div class="exhibit-card">
+        <div class="num">[ PUBLICATION ]</div>
+        <h4 class="f-headline-sm mb-8">Spatial Memory: A Curatorial Review</h4>
+        <span class="f-label text-muted">2021.03.20 &mdash; Publication</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM 4: THE ARCHIVES -->
+<div class="room-overlay left" id="overlay-4">
+  <div class="panel panel-wide">
+    <span class="f-label text-muted mb-16" style="display:block;">[ 04. The Archives &mdash; Education ]</span>
+    <h2 class="f-headline mb-32">Institutional Records</h2>
+
+    <div style="margin-bottom:28px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <h3 class="f-headline-sm">Bachelor of Fine Arts</h3>
+        <span class="f-label text-muted">RECORD NO. 2018-022</span>
+      </div>
+      <p class="f-body" style="color:#444748;">Srishti Manipal Institute of Art, Design and Technology (SMIADT)</p>
+      <div class="line"></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div>
+          <span class="f-label text-muted">MAJORS</span>
+          <p class="f-body" style="color:#1a1c1c; margin-top:4px;">Experimental Media Arts, Curatorial Praxis</p>
+        </div>
+        <div>
+          <span class="f-label text-muted">LOCATION</span>
+          <p class="f-body" style="color:#1a1c1c; margin-top:4px;">Bangalore, IN</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:28px;">
+      <h3 class="f-headline-sm mb-8">High School Diploma</h3>
+      <p class="f-body" style="color:#444748;">Major in Humanities and Fine Arts. Focus on Literature, Psychology, and Media Studies.</p>
+    </div>
+
+    <div class="line"></div>
+    <span class="f-label text-muted mb-16" style="display:block;">Archived Documents</span>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+      <div class="exhibit-card">
+        <div class="num">[ CERT_08 ]</div>
+        <h4 class="f-headline-sm mb-8" style="font-size:18px;">Curatorial Internship</h4>
+        <p class="f-body" style="color:#444748; font-size:14px;">Experimenter Kolkata &mdash; Immersive training in gallery management, exhibition design, and archival research.</p>
+        <div class="line"></div>
+        <span class="f-label text-muted">DATED: 2022.06.15</span>
+      </div>
+      <div class="exhibit-card">
+        <div class="num">[ CERT_09 ]</div>
+        <h4 class="f-headline-sm mb-8" style="font-size:18px;">IELTS Academic</h4>
+        <p class="f-body" style="color:#444748; font-size:14px;">Validated proficiency in English language for international academic collaboration.</p>
+        <div class="line"></div>
+        <span class="f-label text-muted">SCORE: 8.5 / 9.0</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM 5: CURATOR'S TOOLKIT -->
+<div class="room-overlay right" id="overlay-5">
+  <div class="panel">
+    <span class="f-label text-muted mb-16" style="display:block;">[ 05. Curator's Toolkit ]</span>
+    <h2 class="f-headline mb-32">Instruments of Practice</h2>
+
+    <div class="skill-item">
+      <span class="f-label-lg" style="width:160px; flex-shrink:0;">Critical Thinking</span>
+      <div class="skill-bar-track"><div class="skill-bar-fill" style="width:100%;"></div></div>
+    </div>
+    <div class="skill-item">
+      <span class="f-label-lg" style="width:160px; flex-shrink:0;">Curatorial Writing</span>
+      <div class="skill-bar-track"><div class="skill-bar-fill" style="width:100%;"></div></div>
+    </div>
+    <div class="skill-item">
+      <span class="f-label-lg" style="width:160px; flex-shrink:0;">Communication</span>
+      <div class="skill-bar-track"><div class="skill-bar-fill" style="width:90%;"></div></div>
+    </div>
+    <div class="skill-item">
+      <span class="f-label-lg" style="width:160px; flex-shrink:0;">Spreadsheet Tracking</span>
+      <div class="skill-bar-track"><div class="skill-bar-fill" style="width:85%;"></div></div>
+    </div>
+    <div class="skill-item">
+      <span class="f-label-lg" style="width:160px; flex-shrink:0;">Narrative Scaffolding</span>
+      <div class="skill-bar-track"><div class="skill-bar-fill" style="width:75%;"></div></div>
+    </div>
+
+    <div class="line"></div>
+    <p class="f-body" style="color:#444748; font-style:italic;">
+      &ldquo;Every object has a biography; my job is to write the next chapter.&rdquo;
+    </p>
+  </div>
+</div>
+
+<!-- ROOM 6: THE GUESTBOOK -->
+<div class="room-overlay center" id="overlay-6">
+  <div class="panel" style="text-align:left;">
+    <span class="f-label text-muted mb-16" style="display:block;">[ 06. The Guestbook ]</span>
+    <h2 class="f-headline mb-32">Before You Exit</h2>
+
+    <div style="margin-bottom:28px;">
+      <span class="f-label text-muted mb-12" style="display:block;">Direct Communications</span>
+      <a class="contact-link" href="mailto:noyonika.palit@curate.com">
+        <span class="material-symbols-outlined" style="font-size:18px;">mail</span>
+        <span class="f-label-lg">noyonika.palit@curate.com</span>
+      </a>
+      <a class="contact-link" href="#">
+        <span class="material-symbols-outlined" style="font-size:18px;">link</span>
+        <span class="f-label-lg">linkedin.com/in/npalit</span>
+      </a>
+      <a class="contact-link" href="#">
+        <span class="material-symbols-outlined" style="font-size:18px;">photo_camera</span>
+        <span class="f-label-lg">@noyonika.curates</span>
+      </a>
+    </div>
+
+    <div class="line"></div>
+
+    <div style="margin-bottom:20px;">
+      <span class="f-label text-muted mb-8" style="display:block;">Location</span>
+      <p class="f-body" style="color:#444748;">Currently based in Mumbai, India.<br>Open to international commissions.</p>
+    </div>
+
+    <div class="line"></div>
+
+    <div style="display:flex; gap:16px; flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="material-symbols-outlined" style="font-size:16px; color:#747878;">verified</span>
+        <span class="f-label text-muted">IELTS Certified</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="material-symbols-outlined" style="font-size:16px; color:#747878;">museum</span>
+        <span class="f-label text-muted">Kochi Biennale 2022</span>
+      </div>
+    </div>
+
+    <div style="margin-top:32px; text-align:center;">
+      <p class="f-label" style="font-size:9px; color:#a0a0a0;">&copy; 2024 NOYONIKA PALIT &mdash; CURATED PORTFOLIO EXHIBITION</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ SCROLL CONTAINER ═══════════════════════════ -->
+<div id="scroll-container">
+  <div class="scroll-spacer" data-room="0"></div>
+  <div class="scroll-spacer" data-room="0"></div>
+  <div class="scroll-spacer" data-room="1"></div>
+  <div class="scroll-spacer" data-room="1"></div>
+  <div class="scroll-spacer" data-room="2"></div>
+  <div class="scroll-spacer" data-room="2"></div>
+  <div class="scroll-spacer" data-room="3"></div>
+  <div class="scroll-spacer" data-room="3"></div>
+  <div class="scroll-spacer" data-room="4"></div>
+  <div class="scroll-spacer" data-room="4"></div>
+  <div class="scroll-spacer" data-room="5"></div>
+  <div class="scroll-spacer" data-room="5"></div>
+  <div class="scroll-spacer" data-room="6"></div>
+  <div class="scroll-spacer" data-room="6"></div>
+</div>
+
+<!-- ═══════════════════════════ THREE.JS + LOGIC ═══════════════════════════ -->
+<script type="module">
+import * as THREE from 'three';
+
+// ────────────────────────────────────────
+// CONFIG
+// ────────────────────────────────────────
+const ROOM_COUNT = 7;
+const ROOM_NAMES = ['ENTRANCE','THE FOYER','EXHIBITION HALL','CURATIONS','THE ARCHIVES','TOOLKIT','THE GUESTBOOK'];
+const ROOM_THRESHOLDS = [0, 0.14, 0.28, 0.43, 0.57, 0.71, 0.86, 1.0];
+
+// ────────────────────────────────────────
+// SCENE
+// ────────────────────────────────────────
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080808);
+scene.fog = new THREE.FogExp2(0x080808, 0.018);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 250);
+camera.position.set(0, 1.7, 8);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.getElementById('gallery-canvas').appendChild(renderer.domElement);
+
+// ────────────────────────────────────────
+// MATERIALS
+// ────────────────────────────────────────
+const wallMat = new THREE.MeshStandardMaterial({ color: 0xf2f2f0, roughness: 0.92, metalness: 0.0 });
+const floorMat = new THREE.MeshStandardMaterial({ color: 0xd8d8d5, roughness: 0.25, metalness: 0.08 });
+const ceilMat = new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 1.0, metalness: 0.0 });
+const frameMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.35, metalness: 0.7 });
+const canvasMat = new THREE.MeshStandardMaterial({ color: 0xfcfcfa, roughness: 0.95 });
+const pedestalMat = new THREE.MeshStandardMaterial({ color: 0xe8e8e5, roughness: 0.5, metalness: 0.1 });
+const accentMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4, metalness: 0.3 });
+
+// ────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────
+function createWall(w, h, x, y, z, ry = 0) {
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wallMat);
+  m.position.set(x, y, z);
+  m.rotation.y = ry;
+  m.receiveShadow = true;
+  scene.add(m);
+  return m;
+}
+
+function createFrame(fw, fh, x, y, z, ry = 0) {
+  const g = new THREE.Group();
+  const t = 0.04, d = 0.025;
+  const barH = new THREE.BoxGeometry(fw + t * 2, t, d);
+  const barV = new THREE.BoxGeometry(t, fh, d);
+  const top = new THREE.Mesh(barH, frameMat); top.position.y = fh / 2; g.add(top);
+  const bot = new THREE.Mesh(barH, frameMat); bot.position.y = -fh / 2; g.add(bot);
+  const lft = new THREE.Mesh(barV, frameMat); lft.position.x = -fw / 2; g.add(lft);
+  const rgt = new THREE.Mesh(barV, frameMat); rgt.position.x = fw / 2; g.add(rgt);
+  const cvs = new THREE.Mesh(new THREE.PlaneGeometry(fw - 0.02, fh - 0.02), canvasMat);
+  cvs.position.z = -0.005; g.add(cvs);
+  g.position.set(x, y, z); g.rotation.y = ry;
+  g.traverse(c => { if (c.isMesh) c.castShadow = true; });
+  scene.add(g);
+  return g;
+}
+
+function createSpot(x, y, z, tx, ty, tz, intensity = 3, angle = Math.PI / 7) {
+  const s = new THREE.SpotLight(0xfff8ef, intensity, 30, angle, 0.6, 1.2);
+  s.position.set(x, y, z);
+  s.target.position.set(tx, ty, tz);
+  s.castShadow = true;
+  s.shadow.mapSize.set(512, 512);
+  s.shadow.bias = -0.001;
+  scene.add(s); scene.add(s.target);
+  return s;
+}
+
+// ────────────────────────────────────────
+// GALLERY GEOMETRY
+// ────────────────────────────────────────
+
+// ── Floor ──
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 160), floorMat);
+floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, -65); floor.receiveShadow = true;
+scene.add(floor);
+
+// ── Ceiling ──
+const ceil = new THREE.Mesh(new THREE.PlaneGeometry(40, 160), ceilMat);
+ceil.rotation.x = Math.PI / 2; ceil.position.set(0, 4.8, -65);
+scene.add(ceil);
+
+// ── ROOM 0: ENTRANCE CORRIDOR ──
+createWall(20, 4.8, -2.2, 2.4, -2, Math.PI / 2);   // left wall
+createWall(20, 4.8, 2.2, 2.4, -2, -Math.PI / 2);   // right wall
+createWall(4.4, 4.8, 0, 2.4, 8, 0);                  // back wall (entrance)
+
+// ── ROOM 1: THE FOYER ──
+createWall(20, 4.8, -7, 2.4, -20, Math.PI / 2);
+createWall(20, 4.8, 7, 2.4, -20, Math.PI / 2);       // typo fix: right side
+createWall(20, 4.8, 7, 2.4, -20, -Math.PI / 2);
+// Transition walls (partial, with doorway gap)
+createWall(4, 4.8, -5, 2.4, -10, 0);
+createWall(4, 4.8, 5, 2.4, -10, 0);
+
+// ── ROOM 2: EXHIBITION HALL ──
+createWall(25, 5.2, -8, 2.6, -42, Math.PI / 2);
+createWall(25, 5.2, 8, 2.6, -42, -Math.PI / 2);
+createWall(5, 4.8, -6, 2.4, -30, 0);
+createWall(5, 4.8, 6, 2.4, -30, 0);
+
+// ── ROOM 3: CURATIONS ──
+createWall(16, 4.8, -6, 2.4, -65, Math.PI / 2);
+createWall(16, 4.8, 6, 2.4, -65, -Math.PI / 2);
+createWall(4, 4.8, -4.5, 2.4, -55, 0);
+createWall(4, 4.8, 4.5, 2.4, -55, 0);
+
+// ── ROOM 4: ARCHIVES ──
+createWall(16, 4.2, -5.5, 2.1, -85, Math.PI / 2);
+createWall(16, 4.2, 5.5, 2.1, -85, -Math.PI / 2);
+createWall(4, 4.2, -4, 2.1, -77, 0);
+createWall(4, 4.2, 4, 2.1, -77, 0);
+
+// ── ROOM 5: TOOLKIT ──
+createWall(16, 4.8, -6, 2.4, -105, Math.PI / 2);
+createWall(16, 4.8, 6, 2.4, -105, -Math.PI / 2);
+createWall(4, 4.8, -4.5, 2.4, -97, 0);
+createWall(4, 4.8, 4.5, 2.4, -97, 0);
+
+// ── ROOM 6: GUESTBOOK ──
+createWall(20, 4.8, -7, 2.4, -125, Math.PI / 2);
+createWall(20, 4.8, 7, 2.4, -125, -Math.PI / 2);
+createWall(5, 4.8, -5, 2.4, -115, 0);
+createWall(5, 4.8, 5, 2.4, -115, 0);
+createWall(14, 4.8, 0, 2.4, -135, 0);  // end wall
+
+// ────────────────────────────────────────
+// PICTURE FRAMES ON WALLS
+// ────────────────────────────────────────
+
+// Entrance - name wall (a large frame at corridor end)
+createFrame(2.4, 1.2, 0, 2.0, -9.9, 0);
+
+// Foyer - frames on side walls
+createFrame(1.6, 1.2, -6.95, 2.0, -16, Math.PI / 2);
+createFrame(1.2, 0.9, -6.95, 2.0, -22, Math.PI / 2);
+createFrame(1.8, 1.0, 6.95, 2.2, -18, -Math.PI / 2);
+createFrame(1.0, 1.4, 6.95, 2.0, -24, -Math.PI / 2);
+
+// Exhibition Hall - larger frames
+createFrame(2.5, 1.8, -7.95, 2.2, -36, Math.PI / 2);
+createFrame(2.0, 1.5, -7.95, 2.2, -44, Math.PI / 2);
+createFrame(3.0, 2.0, 7.95, 2.4, -40, -Math.PI / 2);
+createFrame(1.8, 1.3, 7.95, 2.0, -48, -Math.PI / 2);
+
+// Curations - smaller dense frames
+createFrame(1.0, 0.8, -5.95, 1.8, -60, Math.PI / 2);
+createFrame(1.0, 0.8, -5.95, 1.8, -63, Math.PI / 2);
+createFrame(1.0, 0.8, -5.95, 1.8, -66, Math.PI / 2);
+createFrame(1.2, 0.9, 5.95, 2.0, -62, -Math.PI / 2);
+createFrame(1.2, 0.9, 5.95, 2.0, -68, -Math.PI / 2);
+
+// Archives
+createFrame(1.4, 1.0, -5.45, 1.8, -82, Math.PI / 2);
+createFrame(1.4, 1.0, -5.45, 1.8, -87, Math.PI / 2);
+createFrame(1.8, 1.2, 5.45, 2.0, -84, -Math.PI / 2);
+
+// Toolkit
+createFrame(1.6, 1.6, -5.95, 2.0, -102, Math.PI / 2);
+createFrame(2.0, 1.4, 5.95, 2.2, -106, -Math.PI / 2);
+
+// Guestbook
+createFrame(2.2, 1.6, 0, 2.2, -134.9, 0);
+
+// ────────────────────────────────────────
+// PEDESTALS & SCULPTURES
+// ────────────────────────────────────────
+const sculptures = [];
+
+// Foyer pedestal with icosahedron
+{
+  const ped = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.0, 0.6), pedestalMat);
+  ped.position.set(3, 0.5, -20); ped.castShadow = true; scene.add(ped);
+  const ico = new THREE.Mesh(new THREE.IcosahedronGeometry(0.35, 0), accentMat);
+  ico.position.set(3, 1.35, -20); ico.castShadow = true; scene.add(ico);
+  sculptures.push(ico);
+}
+
+// Exhibition Hall pedestal with torus knot
+{
+  const ped = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.2, 0.7), pedestalMat);
+  ped.position.set(0, 0.6, -42); ped.castShadow = true; scene.add(ped);
+  const tk = new THREE.Mesh(
+    new THREE.TorusKnotGeometry(0.3, 0.08, 80, 12, 2, 3),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.2, metalness: 0.8 })
+  );
+  tk.position.set(0, 1.6, -42); tk.castShadow = true; scene.add(tk);
+  sculptures.push(tk);
+}
+
+// Archives - glass case (wireframe box)
+{
+  const ped = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.8), pedestalMat);
+  ped.position.set(-2, 0.45, -85); ped.castShadow = true; scene.add(ped);
+  const glass = new THREE.Mesh(
+    new THREE.BoxGeometry(0.7, 0.6, 0.7),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.15 })
+  );
+  glass.position.set(-2, 1.2, -85); scene.add(glass);
+  const innerObj = new THREE.Mesh(new THREE.OctahedronGeometry(0.15, 0), accentMat);
+  innerObj.position.set(-2, 1.2, -85); scene.add(innerObj);
+  sculptures.push(innerObj);
+}
+
+// Toolkit - floating dodecahedron
+{
+  const dodec = new THREE.Mesh(
+    new THREE.DodecahedronGeometry(0.4, 0),
+    new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.15, metalness: 0.9, wireframe: false })
+  );
+  dodec.position.set(3, 2.0, -104); dodec.castShadow = true; scene.add(dodec);
+  sculptures.push(dodec);
+}
+
+// Guestbook - small sphere
+{
+  const sph = new THREE.Mesh(
+    new THREE.SphereGeometry(0.25, 32, 32),
+    new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.1, metalness: 0.95 })
+  );
+  sph.position.set(-2, 1.5, -128); sph.castShadow = true; scene.add(sph);
+  sculptures.push(sph);
+}
+
+// ────────────────────────────────────────
+// LIGHTING
+// ────────────────────────────────────────
+
+// Global ambient - very low
+const ambient = new THREE.AmbientLight(0xffffff, 0.08);
+scene.add(ambient);
+
+// Entrance - single dramatic spot
+createSpot(0, 4.5, -4, 0, 0, -10, 4, Math.PI / 8);
+
+// Foyer - brighter, multiple
+createSpot(-3, 4.5, -16, -6.9, 2.0, -16, 2.5);
+createSpot(3, 4.5, -18, 6.9, 2.2, -18, 2.5);
+createSpot(3, 4.5, -20, 3, 1.3, -20, 1.5);  // pedestal
+const foyerFill = new THREE.PointLight(0xfff5e6, 0.4, 20);
+foyerFill.position.set(0, 3.5, -20); scene.add(foyerFill);
+
+// Exhibition Hall - dramatic multi-spot
+createSpot(-4, 4.8, -36, -7.9, 2.2, -36, 3);
+createSpot(4, 4.8, -40, 7.9, 2.4, -40, 3);
+createSpot(-3, 4.8, -44, -7.9, 2.2, -44, 2.5);
+createSpot(3, 4.8, -48, 7.9, 2.0, -48, 2.5);
+createSpot(0, 4.8, -42, 0, 1.6, -42, 2);  // pedestal
+const exhFill = new THREE.PointLight(0xfff5e6, 0.3, 30);
+exhFill.position.set(0, 3.5, -42); scene.add(exhFill);
+
+// Curations
+createSpot(-2, 4.5, -62, -5.9, 1.8, -62, 2);
+createSpot(2, 4.5, -65, 5.9, 2.0, -65, 2);
+const curFill = new THREE.PointLight(0xfff8ef, 0.35, 18);
+curFill.position.set(0, 3.5, -65); scene.add(curFill);
+
+// Archives - warm amber
+createSpot(-2, 4, -82, -5.4, 1.8, -82, 2.5, Math.PI / 6);
+createSpot(2, 4, -85, 5.4, 2.0, -84, 2.5, Math.PI / 6);
+createSpot(-2, 4, -85, -2, 1.2, -85, 1.5);  // glass case
+const archFill = new THREE.PointLight(0xffe8c8, 0.4, 18);
+archFill.position.set(0, 3, -85); scene.add(archFill);
+
+// Toolkit - cool white
+createSpot(-2, 4.5, -102, -5.9, 2.0, -102, 2.5);
+createSpot(3, 4.5, -104, 3, 2.0, -104, 2);
+createSpot(2, 4.5, -106, 5.9, 2.2, -106, 2.5);
+const toolFill = new THREE.PointLight(0xf0f0ff, 0.35, 18);
+toolFill.position.set(0, 3.5, -105); scene.add(toolFill);
+
+// Guestbook - warm inviting
+createSpot(0, 4.5, -125, 0, 2.2, -134.9, 2.5);
+createSpot(-2, 4.5, -128, -2, 1.5, -128, 1.5);
+const gbFill = new THREE.PointLight(0xfff0d6, 0.5, 22);
+gbFill.position.set(0, 3, -125); scene.add(gbFill);
+
+// ────────────────────────────────────────
+// PARTICLES (Dust Motes)
+// ────────────────────────────────────────
+const PARTICLE_COUNT = 350;
+const pPositions = new Float32Array(PARTICLE_COUNT * 3);
+const pVelocities = new Float32Array(PARTICLE_COUNT * 3);
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  pPositions[i * 3] = (Math.random() - 0.5) * 16;
+  pPositions[i * 3 + 1] = Math.random() * 4.5;
+  pPositions[i * 3 + 2] = Math.random() * -140;
+  pVelocities[i * 3] = (Math.random() - 0.5) * 0.002;
+  pVelocities[i * 3 + 1] = (Math.random() - 0.5) * 0.001;
+  pVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.001;
+}
+const pGeom = new THREE.BufferGeometry();
+pGeom.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+const pMat = new THREE.PointsMaterial({
+  color: 0xffffff, size: 0.025, transparent: true, opacity: 0.35,
+  sizeAttenuation: true, depthWrite: false
+});
+const particles = new THREE.Points(pGeom, pMat);
+scene.add(particles);
+
+// ────────────────────────────────────────
+// CAMERA PATH
+// ────────────────────────────────────────
+const pathPoints = [
+  new THREE.Vector3(0, 1.7, 8),
+  new THREE.Vector3(0, 1.7, 2),
+  new THREE.Vector3(0, 1.7, -6),
+  // Foyer
+  new THREE.Vector3(0, 1.7, -14),
+  new THREE.Vector3(-1.5, 1.7, -20),
+  new THREE.Vector3(0, 1.7, -26),
+  // Exhibition
+  new THREE.Vector3(0, 1.7, -34),
+  new THREE.Vector3(2, 1.7, -40),
+  new THREE.Vector3(-2, 1.7, -47),
+  new THREE.Vector3(0, 1.7, -52),
+  // Curations
+  new THREE.Vector3(0, 1.7, -58),
+  new THREE.Vector3(-1, 1.7, -64),
+  new THREE.Vector3(0, 1.7, -70),
+  // Archives
+  new THREE.Vector3(0, 1.7, -78),
+  new THREE.Vector3(1, 1.7, -84),
+  new THREE.Vector3(0, 1.7, -90),
+  // Toolkit
+  new THREE.Vector3(0, 1.7, -98),
+  new THREE.Vector3(-1, 1.7, -104),
+  new THREE.Vector3(0, 1.7, -110),
+  // Guestbook
+  new THREE.Vector3(0, 1.7, -116),
+  new THREE.Vector3(0.5, 1.7, -122),
+  new THREE.Vector3(0, 1.7, -130),
+];
+
+const cameraPath = new THREE.CatmullRomCurve3(pathPoints, false, 'catmullrom', 0.3);
+
+// ────────────────────────────────────────
+// SCROLL STATE
+// ────────────────────────────────────────
+let scrollProgress = 0;
+let currentRoom = 0;
+let targetScrollProgress = 0;
+const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+
+gsap.registerPlugin(ScrollTrigger);
+
+ScrollTrigger.create({
+  trigger: '#scroll-container',
+  start: 'top top',
+  end: 'bottom bottom',
+  scrub: 0,
+  onUpdate: (self) => { targetScrollProgress = self.progress; }
+});
+
+window.addEventListener('mousemove', (e) => {
+  mouse.targetX = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.targetY = (e.clientY / window.innerHeight) * 2 - 1;
+});
+
+// ────────────────────────────────────────
+// NAV DOT CLICK
+// ────────────────────────────────────────
+document.querySelectorAll('.nav-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const roomIndex = parseInt(dot.dataset.room);
+    const targetScroll = ROOM_THRESHOLDS[roomIndex] + 0.01;
+    const scrollH = document.getElementById('scroll-container').scrollHeight - window.innerHeight;
+    window.scrollTo({ top: targetScroll * scrollH, behavior: 'smooth' });
+  });
+});
+
+// Map button scrolls to top
+document.getElementById('map-btn').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ────────────────────────────────────────
+// CONTENT / UI UPDATES
+// ────────────────────────────────────────
+function updateUI(progress) {
+  // Determine current room
+  let room = 0;
+  for (let i = 0; i < ROOM_THRESHOLDS.length - 1; i++) {
+    if (progress >= ROOM_THRESHOLDS[i] && progress < ROOM_THRESHOLDS[i + 1]) {
+      room = i; break;
+    }
+  }
+  if (progress >= ROOM_THRESHOLDS[ROOM_THRESHOLDS.length - 1] - 0.01) room = ROOM_COUNT - 1;
+
+  if (room !== currentRoom) {
+    currentRoom = room;
+    // Update overlays
+    for (let i = 0; i < ROOM_COUNT; i++) {
+      const el = document.getElementById(`overlay-${i}`);
+      if (el) el.classList.toggle('active', i === room);
+    }
+    // Update room indicator
+    document.getElementById('room-indicator').textContent = `[ ${String(room).padStart(2,'0')}. ${ROOM_NAMES[room]} ]`;
+    // Update nav dots
+    document.querySelectorAll('.nav-dot').forEach((d, i) => d.classList.toggle('active', i === room));
+  }
+
+  // Hide scroll cue after initial scroll
+  const cue = document.getElementById('scroll-cue');
+  if (progress > 0.03) cue.style.opacity = '0';
+  else cue.style.opacity = '1';
+
+  // Adjust fog and exposure based on room
+  const roomConfigs = [
+    { fogDensity: 0.022, exposure: 0.8, bgColor: 0x080808 },   // Entrance - dark
+    { fogDensity: 0.014, exposure: 1.3, bgColor: 0x0c0c0c },   // Foyer - brightening
+    { fogDensity: 0.012, exposure: 1.4, bgColor: 0x0a0a0a },   // Exhibition - bright
+    { fogDensity: 0.015, exposure: 1.2, bgColor: 0x0b0b0b },   // Curations
+    { fogDensity: 0.016, exposure: 1.1, bgColor: 0x0a0908 },   // Archives - warm
+    { fogDensity: 0.013, exposure: 1.3, bgColor: 0x090a0c },   // Toolkit - cool
+    { fogDensity: 0.014, exposure: 1.2, bgColor: 0x0a0a08 },   // Guestbook - warm
+  ];
+
+  const config = roomConfigs[room];
+  scene.fog.density += (config.fogDensity - scene.fog.density) * 0.03;
+  renderer.toneMappingExposure += (config.exposure - renderer.toneMappingExposure) * 0.03;
+
+  const targetBg = new THREE.Color(config.bgColor);
+  scene.background.lerp(targetBg, 0.03);
+  scene.fog.color.lerp(targetBg, 0.03);
+}
+
+// ────────────────────────────────────────
+// ANIMATION LOOP
+// ────────────────────────────────────────
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  const elapsed = clock.getElapsedTime();
+
+  // Smooth scroll interpolation
+  scrollProgress += (targetScrollProgress - scrollProgress) * 0.06;
+  const clampedProgress = Math.max(0, Math.min(1, scrollProgress));
+
+  // Camera position from path
+  const pathPoint = cameraPath.getPointAt(clampedProgress);
+  const lookAheadT = Math.min(clampedProgress + 0.015, 1);
+  const lookPoint = cameraPath.getPointAt(lookAheadT);
+
+  camera.position.lerp(pathPoint, 0.08);
+
+  // Mouse look-around (subtle)
+  mouse.x += (mouse.targetX - mouse.x) * 0.04;
+  mouse.y += (mouse.targetY - mouse.y) * 0.04;
+
+  const lookTarget = lookPoint.clone();
+  lookTarget.x += mouse.x * 0.6;
+  lookTarget.y += mouse.y * 0.25 + 1.7;
+  camera.lookAt(lookTarget);
+
+  // Subtle head-bob
+  camera.position.y += Math.sin(elapsed * 1.2) * 0.005;
+
+  // Rotate sculptures
+  sculptures.forEach((s, i) => {
+    s.rotation.y += 0.003 + i * 0.001;
+    s.rotation.x += 0.001;
+    s.position.y += Math.sin(elapsed * 0.8 + i * 2) * 0.001;
+  });
+
+  // Animate particles
+  const pArr = particles.geometry.attributes.position.array;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    pArr[i * 3] += pVelocities[i * 3];
+    pArr[i * 3 + 1] += pVelocities[i * 3 + 1] + Math.sin(elapsed + i) * 0.0003;
+    pArr[i * 3 + 2] += pVelocities[i * 3 + 2];
+    // Soft boundary
+    if (Math.abs(pArr[i * 3]) > 10) pVelocities[i * 3] *= -1;
+    if (pArr[i * 3 + 1] > 4.5 || pArr[i * 3 + 1] < 0.2) pVelocities[i * 3 + 1] *= -1;
+  }
+  particles.geometry.attributes.position.needsUpdate = true;
+
+  // UI updates
+  updateUI(clampedProgress);
+
+  renderer.render(scene, camera);
+}
+
+// ────────────────────────────────────────
+// RESIZE
+// ────────────────────────────────────────
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ────────────────────────────────────────
+// LOADER
+// ────────────────────────────────────────
+const loaderFill = document.getElementById('loader-fill');
+let loadProgress = 0;
+const loadInterval = setInterval(() => {
+  loadProgress += Math.random() * 25;
+  if (loadProgress >= 100) {
+    loadProgress = 100;
+    clearInterval(loadInterval);
+    loaderFill.style.width = '100%';
+    setTimeout(() => {
+      document.getElementById('loader').classList.add('hidden');
+    }, 600);
+  }
+  loaderFill.style.width = loadProgress + '%';
+}, 200);
+
+// Start animation
+animate();
+
+</script>
+</body>
+</html>
