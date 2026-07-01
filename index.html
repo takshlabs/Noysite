@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NOYONIKA PALIT | A Curated Exhibition</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Work+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
@@ -32,9 +32,9 @@ tailwind.config = {
         "section":"120px","gutter":"32px"
       },
       fontFamily: {
-        "display":["Playfair Display","serif"],
-        "body":["Work Sans","sans-serif"],
-        "mono":["JetBrains Mono","monospace"]
+        "display":["Instrument Serif","serif"],
+        "body":["Syne","sans-serif"],
+        "mono":["Space Mono","monospace"]
       }
     }
   }
@@ -45,6 +45,7 @@ tailwind.config = {
   body { background:#f9f9f9; color:#1a1c1c; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
   ::selection { background:#1a1c1c; color:#fff; }
   .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24; vertical-align:middle; }
+  .font-display { font-weight:400 !important; font-synthesis:none; }
 
   /* ── Loader ── */
   #loader { position:fixed; inset:0; z-index:9999; background:#f9f9f9; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.8s ease, visibility 0.8s ease; }
@@ -116,7 +117,7 @@ tailwind.config = {
 
 <!-- ═══════════ TOP NAVIGATION ═══════════ -->
 <header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 lg:px-container-desktop py-5 bg-background/90 backdrop-blur-md border-b border-outline-variant">
-  <a href="#foyer" class="font-display text-[28px] md:text-[32px] font-bold tracking-tight text-primary leading-none">NOYONIKA PALIT</a>
+  <a href="#foyer" class="font-body text-[24px] md:text-[28px] font-extrabold tracking-tight text-primary leading-none uppercase">NOYONIKA PALIT</a>
   <nav class="hidden md:flex gap-8 items-center">
     <a href="#foyer" class="nav-link font-mono text-[12px] tracking-[0.06em] text-primary border-b border-primary pb-1 uppercase">The Foyer</a>
     <a href="#exhibition" class="nav-link font-mono text-[12px] tracking-[0.06em] text-on-surface-variant hover:text-primary transition-colors uppercase">Exhibition Hall</a>
@@ -129,7 +130,7 @@ tailwind.config = {
 <!-- ═══════════ SIDE NAVIGATION ═══════════ -->
 <aside id="side-nav" class="fixed left-0 top-0 h-full z-40 hidden lg:flex flex-col py-7 bg-surface border-r border-outline-variant overflow-hidden">
   <div class="px-5 mb-10">
-    <span class="font-display text-[20px] font-semibold text-primary block truncate">N. PALIT</span>
+    <span class="font-body text-[18px] font-extrabold text-primary block truncate uppercase tracking-wide">N. PALIT</span>
     <span class="nav-version font-mono text-[10px] text-on-surface-variant tracking-widest">Floor Plan v1.0</span>
   </div>
   <div class="flex flex-col gap-1 flex-grow">
@@ -174,7 +175,7 @@ tailwind.config = {
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter items-start w-full">
       <div class="md:col-span-7 reveal" style="transition-delay:0.1s">
-        <h1 class="font-display text-[56px] md:text-[84px] font-bold leading-[1.02] tracking-tighter mb-8">NOYONIKA PALIT</h1>
+        <h1 class="font-display text-[56px] md:text-[88px] leading-[1.0] tracking-[-0.02em] mb-8">Noyonika Palit</h1>
         <p class="font-body text-[18px] leading-[1.7] text-on-surface-variant max-w-xl mb-10">
           A contemporary art practitioner interested in the intersection of production and curation. Exploring the architectural silence of the white cube through digital spatial experiences and institutional frameworks.
         </p>
@@ -206,7 +207,7 @@ tailwind.config = {
   <section id="exhibition" class="max-w-[1200px] mx-auto px-container-mobile md:px-container-desktop py-section">
     <div class="reveal flex flex-col md:flex-row justify-between items-end mb-14 gap-gutter">
       <div>
-        <h2 class="font-display text-[42px] md:text-[48px] font-semibold leading-tight mb-3">Exhibition Hall</h2>
+        <h2 class="font-body text-[38px] md:text-[48px] font-extrabold leading-tight mb-3 tracking-tight">Exhibition Hall</h2>
         <p class="font-mono text-[12px] text-on-surface-variant tracking-wider uppercase max-w-md">Currently hosting three virtual installations focusing on the archive as a living entity.</p>
       </div>
       <span class="font-mono text-[12px] border-b border-primary cursor-pointer hover:opacity-70 tracking-wider uppercase">View Full Catalogue</span>
@@ -224,7 +225,7 @@ tailwind.config = {
         <div class="flex justify-between items-start">
           <div>
             <span class="font-mono text-[11px] text-on-secondary-container mb-1 block tracking-wider">[ EXHIBIT_01 ]</span>
-            <h3 class="font-display text-[24px] font-medium group-hover:underline">Kochi-Muziris Chronicles</h3>
+            <h3 class="font-display text-[26px] group-hover:underline">Kochi-Muziris Chronicles</h3>
           </div>
           <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">open_in_new</span>
         </div>
@@ -234,7 +235,7 @@ tailwind.config = {
       <div class="group cursor-pointer border border-outline-variant hover:border-primary transition-colors p-gutter bg-white/30 hover-lift flex flex-col justify-between reveal" style="transition-delay:0.1s">
         <div class="mb-3">
           <span class="font-mono text-[11px] text-on-secondary-container mb-1 block tracking-wider">[ EXHIBIT_02 ]</span>
-          <h3 class="font-display text-[22px] font-medium leading-tight">The Science Gallery: Intersections</h3>
+          <h3 class="font-display text-[22px] leading-tight">The Science Gallery: Intersections</h3>
         </div>
         <div class="h-48 md:h-64 overflow-hidden mb-4">
           <img class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
@@ -248,7 +249,7 @@ tailwind.config = {
       <div class="md:col-span-3 group cursor-pointer border border-outline-variant hover:border-primary transition-colors px-gutter py-12 md:px-12 md:py-14 bg-white/30 hover-lift flex flex-col md:flex-row gap-gutter items-center reveal" style="transition-delay:0.15s">
         <div class="flex-1">
           <span class="font-mono text-[11px] text-on-secondary-container mb-1 block tracking-wider">[ EXHIBIT_03 ]</span>
-          <h3 class="font-display text-[28px] md:text-[32px] font-medium mb-3 italic">Materiality &amp; Silence</h3>
+          <h3 class="font-display text-[28px] md:text-[32px] mb-3 italic">Materiality &amp; Silence</h3>
           <p class="font-body text-[16px] text-on-surface-variant max-w-xl leading-relaxed">An immersive study of white space in curatorial practices, referencing the works of O'Doherty and the evolution of the gallery space from temple to cube.</p>
         </div>
         <div class="w-full md:w-1/4 flex items-center justify-center">
@@ -262,23 +263,23 @@ tailwind.config = {
 
   <!-- ─── SECTION 3: SELECTED CURATIONS ─── -->
   <section class="max-w-[1200px] mx-auto px-container-mobile md:px-container-desktop py-section">
-    <h2 class="font-display text-[42px] md:text-[48px] font-semibold mb-14 text-center reveal">Selected Curations</h2>
+    <h2 class="font-body text-[38px] md:text-[48px] font-extrabold mb-14 text-center reveal tracking-tight">Selected Curations</h2>
     <div class="border-t border-outline-variant reveal">
       <div class="py-10 border-b border-outline-variant grid grid-cols-1 md:grid-cols-12 items-center hover:bg-surface-container-low transition-colors px-4 group cursor-pointer">
         <div class="md:col-span-2 font-mono text-[12px] text-on-surface-variant tracking-wider">2023.11.12</div>
-        <div class="md:col-span-6 font-display text-[22px] font-medium group-hover:translate-x-3 transition-transform">Digital Disruption in Traditional Spaces</div>
+        <div class="md:col-span-6 font-display text-[24px] group-hover:translate-x-3 italic transition-transform">Digital Disruption in Traditional Spaces</div>
         <div class="md:col-span-3 font-mono text-[11px] text-outline uppercase tracking-[0.15em] text-right md:text-left mt-2 md:mt-0">Essay / Research</div>
         <div class="md:col-span-1 flex justify-end"><span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">north_east</span></div>
       </div>
       <div class="py-10 border-b border-outline-variant grid grid-cols-1 md:grid-cols-12 items-center hover:bg-surface-container-low transition-colors px-4 group cursor-pointer">
         <div class="md:col-span-2 font-mono text-[12px] text-on-surface-variant tracking-wider">2022.08.05</div>
-        <div class="md:col-span-6 font-display text-[22px] font-medium group-hover:translate-x-3 transition-transform">The Ethics of the Curated Object</div>
+        <div class="md:col-span-6 font-display text-[24px] group-hover:translate-x-3 italic transition-transform">The Ethics of the Curated Object</div>
         <div class="md:col-span-3 font-mono text-[11px] text-outline uppercase tracking-[0.15em] text-right md:text-left mt-2 md:mt-0">Symposium</div>
         <div class="md:col-span-1 flex justify-end"><span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">north_east</span></div>
       </div>
       <div class="py-10 border-b border-outline-variant grid grid-cols-1 md:grid-cols-12 items-center hover:bg-surface-container-low transition-colors px-4 group cursor-pointer">
         <div class="md:col-span-2 font-mono text-[12px] text-on-surface-variant tracking-wider">2021.03.20</div>
-        <div class="md:col-span-6 font-display text-[22px] font-medium group-hover:translate-x-3 transition-transform">Spatial Memory: A Curatorial Review</div>
+        <div class="md:col-span-6 font-display text-[24px] group-hover:translate-x-3 italic transition-transform">Spatial Memory: A Curatorial Review</div>
         <div class="md:col-span-3 font-mono text-[11px] text-outline uppercase tracking-[0.15em] text-right md:text-left mt-2 md:mt-0">Publication</div>
         <div class="md:col-span-1 flex justify-end"><span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">north_east</span></div>
       </div>
@@ -291,7 +292,7 @@ tailwind.config = {
       <div class="inline-block border-b border-outline mb-3">
         <span class="font-mono text-[12px] uppercase tracking-[0.2em] text-on-surface-variant">[ Gallery Wing 02 ]</span>
       </div>
-      <h2 class="font-display text-[42px] md:text-[56px] font-bold text-primary mb-4 leading-tight">Exhibition Hall:<br>Work History</h2>
+      <h2 class="font-body text-[38px] md:text-[52px] font-extrabold text-primary mb-4 leading-[1.05] tracking-tight">Exhibition Hall:<br>Work History</h2>
       <p class="font-body text-[18px] text-on-surface-variant max-w-2xl leading-relaxed">
         A non-linear progression of professional engagements, curated to reflect the intersection of scientific inquiry, artistic intervention, and public discourse.
       </p>
@@ -305,7 +306,7 @@ tailwind.config = {
           <span class="font-mono text-[12px] text-primary tracking-wider">[ 2021.08 &mdash; PRESENT ]</span>
         </div>
         <div class="mb-10">
-          <h3 class="font-display text-[36px] md:text-[42px] font-semibold text-primary leading-tight mb-1">Science Gallery<br>Bengaluru</h3>
+          <h3 class="font-display text-[36px] md:text-[44px] text-primary leading-[1.1] mb-1 italic">Science Gallery<br>Bengaluru</h3>
           <span class="font-mono text-[12px] text-on-surface-variant italic tracking-wider">Associate Curator &amp; Program Lead</span>
         </div>
         <div class="flex flex-col md:flex-row gap-8 md:gap-10">
@@ -338,7 +339,7 @@ tailwind.config = {
                 <span class="font-mono text-[12px] text-primary tracking-wider">[ 2019.06 &mdash; 2021.05 ]</span>
               </div>
             </div>
-            <h3 class="font-display text-[32px] font-medium text-primary mb-1">Amshu Chukki</h3>
+            <h3 class="font-display text-[34px] text-primary mb-1 italic">Amshu Chukki</h3>
             <span class="font-mono text-[12px] text-on-surface-variant italic tracking-wider">Art Assistant &amp; Studio Manager</span>
             <div class="mt-6 pt-5 border-t border-outline-variant">
               <h4 class="font-mono text-[11px] font-bold uppercase mb-4 tracking-[0.15em]">Curator's Notes</h4>
@@ -358,7 +359,7 @@ tailwind.config = {
       <!-- Public Engagement Dark Card -->
       <div class="lg:col-span-4 bg-primary text-on-primary p-8 md:p-10 gallery-shadow flex flex-col justify-center min-h-[280px] reveal" style="transition-delay:0.15s">
         <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-on-primary-container mb-3">Focus Study</span>
-        <h3 class="font-display text-[24px] font-medium mb-5 leading-snug">The Architecture of<br>Public Engagement</h3>
+        <h3 class="font-display text-[26px] mb-5 leading-snug italic">The Architecture of<br>Public Engagement</h3>
         <p class="font-body text-[15px] opacity-75 leading-relaxed">
           Across both roles, the core objective remained constant: the translation of esoteric concepts into accessible, shared public knowledge through spatial design and narrative curation.
         </p>
@@ -386,19 +387,19 @@ tailwind.config = {
   <section id="archives" class="max-w-[1200px] mx-auto px-container-mobile md:px-container-desktop py-section">
     <div class="reveal mb-gutter">
       <p class="font-mono text-[12px] text-on-surface-variant uppercase tracking-[0.15em] mb-3">[ REF: CATALOG_04 // ACADEMIC ]</p>
-      <h2 class="font-display text-[42px] md:text-[52px] font-bold leading-tight max-w-2xl">The Archives: Education &amp; Certifications.</h2>
+      <h2 class="font-body text-[38px] md:text-[48px] font-extrabold leading-tight max-w-2xl tracking-tight">The Archives: Education &amp; Certifications.</h2>
     </div>
     <div class="h-px bg-outline/30 w-full mb-section reveal"></div>
 
     <!-- Institutional Records -->
-    <h3 class="font-display text-[32px] font-medium mb-gutter reveal">Institutional Records</h3>
+    <h3 class="font-display text-[32px] mb-gutter reveal italic">Institutional Records</h3>
     <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-section">
       <!-- BFA Card -->
       <div class="md:col-span-8 group relative overflow-hidden bg-surface-container-lowest border border-outline-variant p-8 hover-lift museum-shadow flex flex-col justify-between min-h-[340px] reveal">
         <div class="flex justify-between items-start">
           <div>
             <p class="font-mono text-[11px] text-on-surface-variant mb-2 tracking-wider">RECORD NO. 2018-022</p>
-            <h4 class="font-display text-[32px] md:text-[36px] font-semibold">Bachelor of Fine Arts</h4>
+            <h4 class="font-display text-[32px] md:text-[36px]">Bachelor of Fine Arts</h4>
             <p class="font-body text-[17px] text-secondary mt-2">Srishti Manipal Institute of Art, Design and Technology (SMIADT)</p>
           </div>
           <span class="material-symbols-outlined text-4xl opacity-20">school</span>
@@ -422,7 +423,7 @@ tailwind.config = {
       <div class="md:col-span-4 bg-surface-container border border-outline-variant p-8 hover-lift museum-shadow flex flex-col gap-5 reveal" style="transition-delay:0.1s">
         <p class="font-mono text-[11px] text-on-surface-variant tracking-wider">RECORD NO. 2014-001</p>
         <div class="h-px bg-outline-variant w-full"></div>
-        <h4 class="font-display text-[24px] font-medium">High School Diploma</h4>
+        <h4 class="font-display text-[24px]">High School Diploma</h4>
         <p class="font-body text-[15px] text-secondary leading-relaxed">Major in Humanities and Fine Arts. Focus on Literature, Psychology, and Media Studies.</p>
         <div class="mt-auto">
           <p class="font-mono text-[12px] text-primary underline tracking-wider cursor-pointer hover:opacity-70">VIEW TRANSCRIPT_B</p>
@@ -432,7 +433,7 @@ tailwind.config = {
 
     <!-- Archived Documents -->
     <div class="flex justify-between items-end mb-gutter reveal">
-      <h3 class="font-display text-[32px] font-medium">Archived Documents</h3>
+      <h3 class="font-display text-[32px] italic">Archived Documents</h3>
       <p class="font-mono text-[12px] text-on-surface-variant tracking-wider pb-1">Total Entries: 02</p>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-gutter">
@@ -440,7 +441,7 @@ tailwind.config = {
       <div class="border border-outline-variant p-8 hover-lift museum-shadow bg-surface-container-lowest flex flex-col gap-3 relative reveal">
         <div class="absolute top-0 right-8 w-10 h-3 bg-primary-container"></div>
         <p class="font-mono text-[11px] text-on-surface-variant tracking-wider">[ CERT_08 ]</p>
-        <h4 class="font-display text-[22px] font-medium leading-tight">Curatorial Internship, Experimenter Kolkata</h4>
+        <h4 class="font-display text-[22px] leading-tight">Curatorial Internship, Experimenter Kolkata</h4>
         <p class="font-body text-[14px] text-on-surface-variant leading-relaxed">Immersive professional training in gallery management, exhibition design, and archival research within India's leading contemporary art space.</p>
         <div class="mt-5 pt-3 border-t border-outline-variant flex justify-between items-center">
           <span class="font-mono text-[11px] tracking-wider">DATED: 2022.06.15</span>
@@ -451,7 +452,7 @@ tailwind.config = {
       <div class="border border-outline-variant p-8 hover-lift museum-shadow bg-surface-container-lowest flex flex-col gap-3 relative reveal" style="transition-delay:0.1s">
         <div class="absolute top-0 right-8 w-10 h-3 bg-secondary"></div>
         <p class="font-mono text-[11px] text-on-surface-variant tracking-wider">[ CERT_09 ]</p>
-        <h4 class="font-display text-[22px] font-medium leading-tight">IELTS Academic Certification</h4>
+        <h4 class="font-display text-[22px] leading-tight">IELTS Academic Certification</h4>
         <p class="font-body text-[14px] text-on-surface-variant leading-relaxed">Validated proficiency in English language communication, writing, and analytical comprehension for international academic collaboration.</p>
         <div class="mt-5 pt-3 border-t border-outline-variant flex justify-between items-center">
           <span class="font-mono text-[11px] tracking-wider">SCORE: 8.5/9.0</span>
@@ -470,7 +471,7 @@ tailwind.config = {
   <section id="toolkit" class="max-w-[1200px] mx-auto px-container-mobile md:px-container-desktop py-section">
     <div class="reveal mb-14">
       <p class="font-mono text-[12px] text-on-surface-variant tracking-wider mb-3">[ ROOM 04 // THE TOOLKIT ]</p>
-      <h2 class="font-display text-[38px] md:text-[48px] font-semibold text-primary max-w-2xl mb-5 leading-tight">The Art of Curation: Selecting, Preserving, and Presenting.</h2>
+      <h2 class="font-display text-[36px] md:text-[48px] text-primary max-w-2xl mb-5 leading-[1.15] italic">The Art of Curation: Selecting, Preserving, and Presenting.</h2>
       <div class="w-20 h-px bg-primary"></div>
     </div>
 
@@ -486,7 +487,7 @@ tailwind.config = {
             <span class="font-mono text-[11px] text-outline tracking-wider">[ 01 ]</span>
             <span class="material-symbols-outlined text-primary text-[28px]">psychology</span>
           </div>
-          <h4 class="font-display text-[22px] font-medium mb-3">Critical Thinking</h4>
+          <h4 class="font-body text-[20px] font-bold mb-3 tracking-tight">Critical Thinking</h4>
           <p class="font-body text-[14px] text-on-surface-variant mb-5 leading-relaxed">Deconstructing complex narratives into accessible visual spatial journeys.</p>
           <div class="h-[2px] bg-surface-container overflow-hidden"><div class="skill-fill" style="width:100%"></div></div>
         </div>
@@ -495,7 +496,7 @@ tailwind.config = {
             <span class="font-mono text-[11px] text-outline tracking-wider">[ 02 ]</span>
             <span class="material-symbols-outlined text-primary text-[28px]">table_rows</span>
           </div>
-          <h4 class="font-display text-[22px] font-medium mb-3">Spreadsheet Tracking</h4>
+          <h4 class="font-body text-[20px] font-bold mb-3 tracking-tight">Spreadsheet Tracking</h4>
           <p class="font-body text-[14px] text-on-surface-variant mb-5 leading-relaxed">Meticulous logistics, shipping schedules, and archival database management.</p>
           <div class="h-[2px] bg-surface-container overflow-hidden"><div class="skill-fill" style="width:85%"></div></div>
         </div>
@@ -504,7 +505,7 @@ tailwind.config = {
             <span class="font-mono text-[11px] text-outline tracking-wider">[ 03 ]</span>
             <span class="material-symbols-outlined text-primary text-[28px]">record_voice_over</span>
           </div>
-          <h4 class="font-display text-[22px] font-medium mb-3">Communication</h4>
+          <h4 class="font-body text-[20px] font-bold mb-3 tracking-tight">Communication</h4>
           <p class="font-body text-[14px] text-on-surface-variant mb-5 leading-relaxed">High-stakes stakeholder management and diplomatic gallery relations.</p>
           <div class="h-[2px] bg-surface-container overflow-hidden"><div class="skill-fill" style="width:90%"></div></div>
         </div>
@@ -513,7 +514,7 @@ tailwind.config = {
             <span class="font-mono text-[11px] text-outline tracking-wider">[ 04 ]</span>
             <span class="material-symbols-outlined text-primary text-[28px]">account_tree</span>
           </div>
-          <h4 class="font-display text-[22px] font-medium mb-3">Narrative Scaffolding</h4>
+          <h4 class="font-body text-[20px] font-bold mb-3 tracking-tight">Narrative Scaffolding</h4>
           <p class="font-body text-[14px] text-on-surface-variant mb-5 leading-relaxed">Translating conceptual themes into cohesive visitor journeys and educational frameworks.</p>
           <div class="h-[2px] bg-surface-container overflow-hidden"><div class="skill-fill" style="width:75%"></div></div>
         </div>
@@ -522,7 +523,7 @@ tailwind.config = {
             <span class="font-mono text-[11px] text-outline tracking-wider">[ 05 ]</span>
             <span class="material-symbols-outlined text-primary text-[28px]">edit_square</span>
           </div>
-          <h4 class="font-display text-[22px] font-medium mb-3">Curatorial Writing</h4>
+          <h4 class="font-body text-[20px] font-bold mb-3 tracking-tight">Curatorial Writing</h4>
           <p class="font-body text-[14px] text-on-surface-variant mb-5 leading-relaxed">Drafting gallery labels, catalog essays, and press releases with academic rigor.</p>
           <div class="h-[2px] bg-surface-container overflow-hidden"><div class="skill-fill" style="width:100%"></div></div>
         </div>
@@ -541,7 +542,7 @@ tailwind.config = {
     <!-- Quote -->
     <div class="flex flex-col md:flex-row items-center justify-between gap-gutter border-t border-outline-variant pt-16 mt-section reveal">
       <div class="max-w-xl">
-        <h3 class="font-display text-[28px] md:text-[32px] font-medium mb-6 leading-snug italic">Every object has a biography; my job is to write the next chapter.</h3>
+        <h3 class="font-display text-[28px] md:text-[34px] mb-6 leading-[1.3] italic">Every object has a biography; my job is to write the next chapter.</h3>
         <p class="font-body text-[17px] text-on-surface-variant leading-relaxed">Through meticulous organization and artistic intuition, I bridge the gap between creative vision and public engagement.</p>
       </div>
       <div class="flex flex-col gap-4 mt-8 md:mt-0">
@@ -570,7 +571,7 @@ tailwind.config = {
         <!-- Form Side -->
         <div class="flex-1">
           <div class="mb-10">
-            <h2 class="font-display text-[38px] md:text-[48px] font-semibold mb-3">The Guestbook</h2>
+            <h2 class="font-display text-[38px] md:text-[48px] mb-3 italic">The Guestbook</h2>
             <p class="font-body text-[16px] text-on-surface-variant">Before you exit the gallery, please leave your mark or reach out for future collaborations.</p>
           </div>
           <form class="space-y-10" onsubmit="event.preventDefault()">
