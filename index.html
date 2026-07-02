@@ -2,824 +2,466 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>NOYONIKA PALIT | A Curated Exhibition</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Noyonika Palit — Contemporary Art Practitioner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script type="importmap">
-{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"
-}}
-</script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html,body{width:100%;height:100%;overflow:hidden;background:#0a0a0a;font-family:'Syne',sans-serif;-webkit-font-smoothing:antialiased}
-::selection{background:#1a1a1a;color:#fff}
-canvas{display:block;position:fixed;inset:0;z-index:1}
-.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 300,'GRAD' 0,'opsz' 24;vertical-align:middle}
-
-/* ── Loader ── */
-#loader{position:fixed;inset:0;z-index:9999;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1.2s,visibility 1.2s}
-#loader.done{opacity:0;visibility:hidden;pointer-events:none}
-#loader h2{font-family:'Instrument Serif',serif;font-size:clamp(28px,5vw,48px);color:#f0f0f0;font-weight:400;margin-bottom:8px;font-style:italic}
-#loader .sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.3em;color:#666;text-transform:uppercase;margin-bottom:32px}
-#load-bar{width:180px;height:1px;background:#222}
-#load-fill{height:100%;width:0;background:#f0f0f0;transition:width 0.3s}
-
-/* ── HUD ── */
-#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
-
-/* Room Label */
-#room-label{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);z-index:20;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.2em;color:rgba(255,255,255,0.4);text-transform:uppercase;transition:opacity 0.5s;pointer-events:none}
-
-/* Nav Arrows */
-.nav-arrow{position:fixed;top:50%;transform:translateY(-50%);z-index:20;width:52px;height:52px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;cursor:pointer;pointer-events:auto;transition:all 0.3s;backdrop-filter:blur(8px)}
-.nav-arrow:hover{background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.25)}
-.nav-arrow.disabled{opacity:0.15;pointer-events:none}
-.nav-arrow span{color:rgba(255,255,255,0.6);font-size:22px}
-#nav-prev{left:20px}
-#nav-next{right:20px}
-
-/* Viewpoint Counter */
-#vp-counter{position:fixed;bottom:28px;right:28px;z-index:20;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,255,255,0.3);letter-spacing:0.1em;pointer-events:none}
-
-/* Minimap */
-#minimap{position:fixed;top:20px;right:20px;z-index:20;width:140px;height:200px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(12px);pointer-events:auto;padding:12px}
-#minimap canvas{width:100%!important;height:100%!important}
-#minimap .title{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.15em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-bottom:6px}
-
-/* Exhibit Panel */
-#exhibit-panel{position:fixed;z-index:30;pointer-events:auto;opacity:0;visibility:hidden;transition:opacity 0.6s cubic-bezier(0.16,1,0.3,1),visibility 0.6s,transform 0.6s cubic-bezier(0.16,1,0.3,1);transform:translateY(12px)}
-#exhibit-panel.open{opacity:1;visibility:visible;transform:translateY(0)}
-#exhibit-panel.pos-left{top:50%;left:28px;transform:translateY(-50%) translateX(-8px);max-width:480px;max-height:80vh}
-#exhibit-panel.pos-left.open{transform:translateY(-50%) translateX(0)}
-#exhibit-panel.pos-right{top:50%;right:28px;transform:translateY(-50%) translateX(8px);max-width:480px;max-height:80vh}
-#exhibit-panel.pos-right.open{transform:translateY(-50%) translateX(0)}
-#exhibit-panel.pos-center{top:50%;left:50%;transform:translate(-50%,-50%) scale(0.97);max-width:640px;max-height:85vh}
-#exhibit-panel.pos-center.open{transform:translate(-50%,-50%) scale(1)}
-#exhibit-panel .panel-inner{background:rgba(250,250,248,0.96);backdrop-filter:blur(20px);color:#1a1c1c;padding:clamp(24px,4vw,44px);border:1px solid rgba(0,0,0,0.08);overflow-y:auto;max-height:80vh;position:relative}
-#exhibit-panel .panel-inner::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:#1a1a1a}
-.panel-close{position:absolute;top:12px;right:12px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#999;transition:color 0.2s;background:none;border:none;font-size:18px}
-.panel-close:hover{color:#1a1a1a}
-.p-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.15em;color:#888;text-transform:uppercase;margin-bottom:16px;display:block}
-.p-title{font-family:'Instrument Serif',serif;font-size:clamp(24px,3.5vw,36px);font-weight:400;line-height:1.15;margin-bottom:16px;color:#1a1a1a}
-.p-title-sans{font-family:'Syne',sans-serif;font-size:clamp(20px,2.5vw,28px);font-weight:700;line-height:1.2;margin-bottom:16px;color:#1a1a1a;letter-spacing:-0.01em}
-.p-body{font-family:'Syne',sans-serif;font-size:14px;line-height:1.75;color:#555;margin-bottom:12px}
-.p-meta{font-family:'Space Mono',monospace;font-size:11px;color:#999;letter-spacing:0.05em}
-.p-line{height:1px;background:rgba(0,0,0,0.08);margin:16px 0}
-.p-img{width:100%;height:auto;margin:12px 0;filter:grayscale(0.3);transition:filter 0.5s}
-.p-img:hover{filter:grayscale(0)}
-.p-list{list-style:none;padding:0}
-.p-list li{padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06);font-family:'Syne',sans-serif;font-size:13px;color:#555;display:flex;gap:10px}
-.p-list li:last-child{border-bottom:none}
-.p-list .num{font-family:'Space Mono',monospace;font-size:11px;color:#1a1a1a;font-weight:700;flex-shrink:0}
-.p-skill{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,0.05)}
-.p-skill:last-child{border-bottom:none}
-.p-skill-name{font-family:'Space Mono',monospace;font-size:11px;width:140px;flex-shrink:0;letter-spacing:0.03em}
-.p-skill-bar{flex:1;height:2px;background:rgba(0,0,0,0.08);overflow:hidden}
-.p-skill-fill{height:100%;background:#1a1a1a}
-
-/* Instructions Overlay */
-#instructions{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity 0.8s,visibility 0.8s}
-#instructions.hidden{opacity:0;visibility:hidden;pointer-events:none}
-#instructions h3{font-family:'Instrument Serif',serif;font-size:clamp(24px,4vw,40px);color:#f0f0f0;font-weight:400;margin-bottom:20px;font-style:italic}
-#instructions .inst-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-#instructions .inst-icon{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,255,255,0.3);width:80px;text-align:right;letter-spacing:0.1em;text-transform:uppercase}
-#instructions .inst-text{font-family:'Syne',sans-serif;font-size:14px;color:rgba(255,255,255,0.6)}
-#instructions .begin{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.2em;color:rgba(255,255,255,0.35);text-transform:uppercase;margin-top:36px;animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:0.35}50%{opacity:0.7}}
-
-/* Auto Tour Button */
-#auto-tour{position:fixed;top:20px;left:20px;z-index:20;pointer-events:auto;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.12em;padding:8px 14px;cursor:pointer;text-transform:uppercase;transition:all 0.3s;backdrop-filter:blur(8px)}
-#auto-tour:hover{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.8)}
-#auto-tour.active{border-color:rgba(255,255,255,0.4);color:rgba(255,255,255,0.8)}
-
-@media(max-width:600px){
-  .nav-arrow{width:40px;height:40px}
-  #minimap{display:none}
-  #exhibit-panel.pos-left,#exhibit-panel.pos-right,#exhibit-panel.pos-center{top:auto;bottom:0;left:0;right:0;max-width:100%;max-height:55vh;transform:translateY(20px)!important}
-  #exhibit-panel.pos-left.open,#exhibit-panel.pos-right.open,#exhibit-panel.pos-center.open{transform:translateY(0)!important}
+/* ═══════════════ TOKENS ═══════════════ */
+:root{
+  --paper:#f3f1ec;        /* gallery wall white */
+  --paper-2:#eceae4;      /* recessed panel */
+  --ink:#17140f;          /* near-black ink */
+  --ink-soft:#5c5851;     /* muted body */
+  --line:#d6d2c8;         /* hairline */
+  --accent:#8a4b2f;       /* terracotta — single warm accent */
+  --pad:clamp(20px,5vw,80px);
 }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{background:var(--paper);color:var(--ink);font-family:'Syne',sans-serif;overflow-x:hidden}
+body.lenis-stopped{overflow:hidden}
+::selection{background:var(--ink);color:var(--paper)}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+
+.serif{font-family:'Instrument Serif',serif;font-weight:400;font-synthesis:none}
+.mono{font-family:'Space Mono',monospace}
+.italic{font-style:italic}
+
+/* Grain overlay */
+#grain{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0.035;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ═══════════════ LOADER ═══════════════ */
+#loader{position:fixed;inset:0;z-index:10000;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+#loader .lname{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(34px,7vw,84px);color:var(--ink);overflow:hidden}
+#loader .lname span{display:inline-block}
+#loader .lbar{width:min(260px,60vw);height:1px;background:var(--line);position:relative;overflow:hidden}
+#loader .lbar i{position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left}
+#loader .lmeta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* ═══════════════ CHROME (fixed UI) ═══════════════ */
+.chrome{position:fixed;z-index:500;pointer-events:none}
+#brand{top:clamp(18px,3vw,34px);left:var(--pad)}
+#brand .n{font-family:'Instrument Serif',serif;font-style:italic;font-size:20px;line-height:1}
+#brand .r{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.28em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
+#topright{top:clamp(18px,3vw,34px);right:var(--pad);text-align:right;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-soft)}
+#topright #sec-name{color:var(--ink);display:block;margin-top:3px;font-size:11px;letter-spacing:0.16em}
+
+/* progress rail */
+#rail{position:fixed;right:calc(var(--pad) - 6px);top:50%;transform:translateY(-50%);z-index:500;display:flex;flex-direction:column;gap:14px;pointer-events:auto}
+#rail button{all:unset;cursor:pointer;width:9px;height:9px;display:grid;place-items:center}
+#rail button i{width:5px;height:5px;border-radius:50%;background:var(--line);transition:all .4s}
+#rail button.on i{background:var(--ink);transform:scale(1.5)}
+@media(max-width:820px){#rail{display:none}}
+
+#scrollcue{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:500;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity .5s}
+#scrollcue .ln{width:1px;height:34px;background:var(--line);position:relative;overflow:hidden}
+#scrollcue .ln::after{content:'';position:absolute;top:-34px;left:0;width:100%;height:34px;background:var(--ink);animation:cue 2.2s ease-in-out infinite}
+@keyframes cue{0%{transform:translateY(0)}60%,100%{transform:translateY(68px)}}
+
+/* ═══════════════ SECTIONS ═══════════════ */
+section{position:relative}
+.pane{min-height:100vh;padding:clamp(90px,12vh,150px) var(--pad) clamp(60px,8vh,110px);display:flex;flex-direction:column;justify-content:center}
+.eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.eyebrow::before{content:'';width:34px;height:1px;background:var(--accent)}
+
+/* HERO */
+#hero{height:100vh;display:flex;align-items:center;overflow:hidden}
+#hero .wrap{width:100%;padding:0 var(--pad);position:relative;z-index:2}
+#hero .kick{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.32em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:min(4vh,34px)}
+#hero h1{font-family:'Instrument Serif',serif;font-weight:400;line-height:0.9;font-size:clamp(56px,15vw,220px);letter-spacing:-0.01em}
+#hero h1 .l2{font-style:italic;display:block;padding-left:0.12em}
+#hero .sub{margin-top:min(5vh,40px);max-width:520px;font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:var(--ink-soft)}
+#hero .credit{position:absolute;right:var(--pad);bottom:0;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-soft);text-align:right;line-height:1.7}
+#hero .portrait{position:absolute;top:50%;right:8vw;transform:translateY(-50%);width:min(30vw,360px);aspect-ratio:3/4;overflow:hidden;z-index:1;opacity:0;filter:grayscale(1) contrast(1.05)}
+#hero .portrait img{width:100%;height:100%;object-fit:cover;transform:scale(1.15)}
+@media(max-width:900px){#hero .portrait{display:none}}
+
+/* STATEMENT */
+#statement .big{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,4.4vw,62px);line-height:1.2;max-width:16em}
+#statement .big .w{display:inline-block;opacity:0.12;transition:opacity .5s}
+#statement .big em{font-style:italic;color:var(--accent)}
+#statement .langs{margin-top:clamp(36px,6vh,72px);display:flex;gap:clamp(24px,5vw,64px);flex-wrap:wrap}
+#statement .langs div{border-top:1px solid var(--line);padding-top:14px}
+#statement .langs .k{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
+#statement .langs .v{font-family:'Instrument Serif',serif;font-style:italic;font-size:26px}
+
+/* ═══════════════ WORK — HORIZONTAL GALLERY ═══════════════ */
+#work-h{height:100vh;overflow:hidden}
+#work-track{display:flex;height:100vh;will-change:transform}
+.exhibit{flex:0 0 100vw;height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+.exhibit .art{position:relative;overflow:hidden;background:var(--paper-2)}
+.exhibit .art img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.04);transform:scale(1.18);will-change:transform}
+.exhibit .art .tag{position:absolute;top:clamp(24px,4vw,48px);left:clamp(24px,4vw,48px);z-index:2;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:var(--paper);mix-blend-mode:difference}
+.exhibit .art::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(0,0,0,0.25)}
+.exhibit .label{padding:clamp(40px,7vw,110px) clamp(30px,5vw,90px);display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--line)}
+.exhibit .acc{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:22px;display:flex;justify-content:space-between}
+.exhibit h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(30px,3.6vw,54px);line-height:1.02;margin-bottom:10px}
+.exhibit .inst{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.02em;text-transform:uppercase;margin-bottom:6px}
+.exhibit .place{font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:26px}
+.exhibit ul{list-style:none;border-top:1px solid var(--line)}
+.exhibit li{padding:13px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--ink-soft);display:flex;gap:14px}
+.exhibit li .no{font-family:'Space Mono',monospace;font-size:10px;color:var(--ink);flex-shrink:0;padding-top:2px}
+@media(max-width:820px){
+  .exhibit{grid-template-columns:1fr;grid-template-rows:42vh 1fr}
+  .exhibit .label{border-left:none;border-top:1px solid var(--line);padding:32px 24px}
+  .exhibit h3{font-size:30px}
+}
+
+/* horizontal caption */
+#work-h .hcap{position:absolute;bottom:22px;left:var(--pad);z-index:5;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* ═══════════════ EDUCATION ═══════════════ */
+#edu .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+#edu .cell{background:var(--paper);padding:clamp(30px,4vw,60px)}
+#edu .cell .yr{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.2em;color:var(--ink-soft);margin-bottom:20px}
+#edu .cell h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,3vw,42px);line-height:1.05;margin-bottom:10px}
+#edu .cell .sch{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-soft)}
+@media(max-width:820px){#edu .grid{grid-template-columns:1fr}}
+
+/* ═══════════════ CERTS + SKILLS ═══════════════ */
+#practice{background:var(--ink);color:var(--paper)}
+#practice .eyebrow{color:#c98f6f}#practice .eyebrow::before{background:#c98f6f}
+#practice .cols{display:grid;grid-template-columns:1fr 1.3fr;gap:clamp(40px,7vw,110px)}
+#practice h2{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:clamp(30px,4vw,58px);line-height:1.05;margin-bottom:34px}
+#practice .certs{list-style:none}
+#practice .certs li{padding:16px 0;border-top:1px solid rgba(243,241,236,0.14);display:flex;justify-content:space-between;gap:16px;align-items:baseline}
+#practice .certs li:last-child{border-bottom:1px solid rgba(243,241,236,0.14)}
+#practice .certs .c-name{font-family:'Instrument Serif',serif;font-size:22px}
+#practice .certs .c-meta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.14em;color:rgba(243,241,236,0.5);text-transform:uppercase;text-align:right;flex-shrink:0}
+#practice .skillhead{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(243,241,236,0.5);margin-bottom:22px}
+#practice .skills{display:flex;flex-wrap:wrap;gap:10px}
+#practice .skills span{font-family:'Syne',sans-serif;font-weight:500;font-size:13px;padding:9px 16px;border:1px solid rgba(243,241,236,0.2);border-radius:100px;transition:all .35s;cursor:default}
+#practice .skills span:hover{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+@media(max-width:820px){#practice .cols{grid-template-columns:1fr;gap:44px}}
+
+/* ═══════════════ CONTACT ═══════════════ */
+#contact{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(90px,12vh,150px) var(--pad) clamp(30px,5vh,60px)}
+#contact .lead{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(40px,9vw,150px);line-height:0.92;letter-spacing:-0.01em}
+#contact .lead em{font-style:italic;color:var(--accent)}
+#contact .rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:clamp(40px,6vh,70px)}
+#contact .rows a,#contact .rows div{background:var(--paper);padding:24px clamp(18px,2vw,30px);display:block;transition:background .3s}
+#contact .rows a:hover{background:var(--ink);color:var(--paper)}
+#contact .rows .k{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
+#contact .rows .v{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;word-break:break-word}
+#contact .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-soft)}
+
+.reveal{opacity:0;transform:translateY(28px)}
 </style>
 </head>
-<body>
+<body class="lenis-stopped">
 
-<!-- Loader -->
+<div id="grain"></div>
+
+<!-- LOADER -->
 <div id="loader">
-  <h2>Noyonika Palit</h2>
-  <div class="sub">A Curated Exhibition</div>
-  <div id="load-bar"><div id="load-fill"></div></div>
+  <div class="lname" id="lname"></div>
+  <div class="lbar"><i></i></div>
+  <div class="lmeta">A Curated Exhibition</div>
 </div>
 
-<!-- Instructions -->
-<div id="instructions">
-  <h3>Welcome to the Gallery</h3>
-  <div class="inst-row"><span class="inst-icon">Arrows</span><span class="inst-text">Navigate between viewpoints</span></div>
-  <div class="inst-row"><span class="inst-icon">Drag</span><span class="inst-text">Look around the room</span></div>
-  <div class="inst-row"><span class="inst-icon">Auto Tour</span><span class="inst-text">Guided walk-through</span></div>
-  <div class="begin">Click anywhere to enter</div>
+<!-- CHROME -->
+<div class="chrome" id="brand">
+  <div class="n">Noyonika Palit</div>
+  <div class="r">Contemporary Art Practitioner</div>
 </div>
-
-<!-- HUD -->
-<div id="hud">
-  <div class="nav-arrow disabled" id="nav-prev"><span class="material-symbols-outlined">chevron_left</span></div>
-  <div class="nav-arrow" id="nav-next"><span class="material-symbols-outlined">chevron_right</span></div>
+<div class="chrome" id="topright">
+  <span id="sec-index">00 / 06</span>
+  <span id="sec-name">Entrance</span>
 </div>
-<div id="room-label">[ 00. Entrance ]</div>
-<div id="vp-counter">01 / 18</div>
-<button id="auto-tour">Auto Tour</button>
+<div id="rail"></div>
+<div id="scrollcue"><span>Scroll</span><span class="ln"></span></div>
 
-<!-- Minimap -->
-<div id="minimap">
-  <div class="title">Floor Plan</div>
-  <canvas id="minimap-canvas" width="116" height="170"></canvas>
-</div>
-
-<!-- Exhibit Panel -->
-<div id="exhibit-panel" class="pos-right">
-  <div class="panel-inner" id="panel-content">
-    <button class="panel-close" id="panel-close">&times;</button>
+<!-- ░░ 01 HERO ░░ -->
+<section id="hero" data-name="Foyer">
+  <div class="portrait" id="portrait"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqWoPpl7BIygBCma2jQzwtyZQXc2hxSuvZk7qDron2xvKzCAcp9ALYhYaQ8kA5xCEsMoAv6UqtWRmhUhmqM8rDQYwrv2EAJX6ghTNCp_RKA_FNoopmmy1vKuWbjJoEfbCYCVtYB15JOKyH4jqieTVzA-ycuMqjr1otwLJNVQqo2QRt7uy7nSB5kye-CDcpZX-NwPGAnIxVqo28iGPMGoNPSHCuxEgHLOqcrMNMk8sOeTUh0P1sTxLTxsAAJw8A_gq0Iy1QEFX23JY" alt="Gallery"></div>
+  <div class="wrap">
+    <div class="kick">Bengaluru, India — Est. Practice 2021</div>
+    <h1><span class="l1">Noyonika</span><span class="serif italic l2">Palit</span></h1>
+    <p class="sub">A contemporary art practitioner working at the intersection of production and curation — across gallery spaces and large-scale platforms such as biennales.</p>
+    <div class="credit">Curatorial Practice<br>Gallery Operations<br>Public Engagement</div>
   </div>
-</div>
+</section>
 
-<!-- Three.js -->
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-
-// ════════════════════════════════════════
-// DATA
-// ════════════════════════════════════════
-
-const ROOMS = [
-  { id:'entrance', label:'Entrance', z:0, depth:8, width:4, color:0x0a0a0a },
-  { id:'foyer', label:'The Foyer', z:-10, depth:14, width:12, color:0x111111 },
-  { id:'exhibition', label:'Exhibition Hall', z:-26, depth:18, width:14, color:0x0e0e0e },
-  { id:'curations', label:'Selected Curations', z:-46, depth:12, width:10, color:0x0c0c0c },
-  { id:'archives', label:'The Archives', z:-60, depth:14, width:10, color:0x0d0b09 },
-  { id:'toolkit', label:"Curator's Toolkit", z:-76, depth:12, width:12, color:0x0a0b0d },
-  { id:'guestbook', label:'The Guestbook', z:-90, depth:12, width:10, color:0x0c0a08 },
-];
-
-const VIEWPOINTS = [
-  { pos:[0,1.65,3], look:[0,1.65,-5], room:'entrance', label:'Entrance Hall' },
-  { pos:[0,1.65,-8], look:[0,1.65,-16], room:'foyer', label:'The Foyer' },
-  { pos:[-4,1.65,-14], look:[-6.5,1.8,-14], room:'foyer', label:'Introductory Wall Text', panel:'intro', panelPos:'right' },
-  { pos:[4,1.65,-16], look:[6.5,1.8,-16], room:'foyer', label:'Gallery Floor Plan', panel:'floorplan', panelPos:'left' },
-  { pos:[0,1.65,-24], look:[0,1.65,-34], room:'exhibition', label:'Exhibition Hall' },
-  { pos:[-5,1.65,-30], look:[-7.5,1.8,-30], room:'exhibition', label:'Science Gallery Bengaluru', panel:'science', panelPos:'right' },
-  { pos:[5,1.65,-34], look:[7.5,1.8,-34], room:'exhibition', label:'Amshu Chukki', panel:'amshu', panelPos:'left' },
-  { pos:[0,1.65,-38], look:[0,1.8,-44.5], room:'exhibition', label:'Public Engagement', panel:'engagement', panelPos:'center' },
-  { pos:[0,1.65,-45], look:[0,1.65,-52], room:'curations', label:'Selected Curations' },
-  { pos:[-3,1.65,-49], look:[-5.5,1.8,-49], room:'curations', label:'Exhibitions & Research', panel:'curations', panelPos:'right' },
-  { pos:[0,1.65,-58], look:[0,1.65,-66], room:'archives', label:'The Archives' },
-  { pos:[-3,1.65,-63], look:[-5.5,1.8,-63], room:'archives', label:'Education', panel:'education', panelPos:'right' },
-  { pos:[3,1.65,-67], look:[5.5,1.8,-67], room:'archives', label:'Certifications', panel:'certs', panelPos:'left' },
-  { pos:[0,1.65,-74], look:[0,1.65,-82], room:'toolkit', label:"Curator's Toolkit" },
-  { pos:[0,1.65,-80], look:[0,1.8,-88.5], room:'toolkit', label:'Instruments of Practice', panel:'skills', panelPos:'center' },
-  { pos:[0,1.65,-88], look:[0,1.65,-96], room:'guestbook', label:'The Guestbook' },
-  { pos:[-3,1.65,-93], look:[-5.5,1.8,-93], room:'guestbook', label:'Contact & Exit', panel:'contact', panelPos:'right' },
-  { pos:[0,1.65,-96], look:[0,1.8,-100.5], room:'guestbook', label:'Final Wall', panel:'final', panelPos:'center' },
-];
-
-const PANELS = {
-  intro: {
-    html: `<span class="p-label">[ 00. Introductory Wall Text ]</span>
-    <div class="p-title" style="font-style:italic">The Foyer</div>
-    <p class="p-body">A contemporary art practitioner interested in the intersection of production and curation. Exploring the architectural silence of the white cube through digital spatial experiences and institutional frameworks.</p>
-    <p class="p-body">This exhibition maps a curatorial journey through institutional galleries, independent studios, and international biennales — from the Science Gallery Bengaluru to the Kochi-Muziris Biennale.</p>
-    <div class="p-line"></div>
-    <div style="display:flex;justify-content:space-between"><span class="p-meta">LAT: 12.9716° N</span><span class="p-meta">LON: 77.5946° E</span></div>`
-  },
-  floorplan: {
-    html: `<span class="p-label">[ LVL_01_PLAN ]</span>
-    <div class="p-title" style="font-style:italic">Gallery Floor Plan</div>
-    <img class="p-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiR1J-DNARqSWr_OSm0UM51YZwoBS-whFg_zKOS3bHpCLtp3FK3ccOKms2nj4j6HRvTi1iMM-vU2BcRrbZQVkq1XdfVswgHzKLOJXT8047z9TtwNHMKjVr3W3HCU8tI488-9SyU4_NVIf931dBgISWCkw22QKb-acwCo3ENv1xO9zSW-ADuRpKUg4XeRrY2u7oSvvU_zWTTBPtcA7m7yhfah8kTw6YdQvWChSjF8VmCUmqrucfdc3XcC4aFjNtkioDjcNasW7ibWs" alt="Gallery floor plan">
-    <p class="p-body" style="font-size:13px;color:#888">Architectural rendering of the exhibition layout. Six interconnected galleries presenting the curator's journey as a spatial narrative.</p>`
-  },
-  science: {
-    html: `<span class="p-label">[ Accession: 2021.08 — Present ]</span>
-    <div class="p-title" style="font-style:italic">Science Gallery Bengaluru</div>
-    <span class="p-meta" style="display:block;margin-bottom:14px">Associate Curator & Program Lead</span>
-    <img class="p-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqWoPpl7BIygBCma2jQzwtyZQXc2hxSuvZk7qDron2xvKzCAcp9ALYhYaQ8kA5xCEsMoAv6UqtWRmhUhmqM8rDQYwrv2EAJX6ghTNCp_RKA_FNoopmmy1vKuWbjJoEfbCYCVtYB15JOKyH4jqieTVzA-ycuMqjr1otwLJNVQqo2QRt7uy7nSB5kye-CDcpZX-NwPGAnIxVqo28iGPMGoNPSHCuxEgHLOqcrMNMk8sOeTUh0P1sTxLTxsAAJw8A_gq0Iy1QEFX23JY" alt="Science Gallery">
-    <div class="p-line"></div>
-    <ul class="p-list">
-      <li><span class="num">01.</span>Spearheaded Public Engagement strategies for 'PSYCHE' and 'CARBON' exhibitions, bridging local communities and global scientific research.</li>
-      <li><span class="num">02.</span>Curated a multi-disciplinary symposium featuring 15+ international artists and researchers exploring the ecology of urban spaces.</li>
-      <li><span class="num">03.</span>Developed immersive educational toolkits for university students, translating complex data into tactile gallery experiences.</li>
-    </ul>`
-  },
-  amshu: {
-    html: `<span class="p-label">[ Accession: 2019.06 — 2021.05 ]</span>
-    <div class="p-title" style="font-style:italic">Amshu Chukki</div>
-    <span class="p-meta" style="display:block;margin-bottom:14px">Art Assistant & Studio Manager</span>
-    <img class="p-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAETmj8Wh9cMcmtQfuapyYJArQ7YhYaPKfLJUO0aM4Os74w_jAAlKgcYufJ6X7h0aTw5rO6yKXvbkAaCEBNdJfvGGQ-sXE26Rh_fuLebDpxkRyY1Bh1NVkAjaXwEsjGtx2ve5Jrq_rzWDY4GpHAbUih5G86rXhbLXHuSdWL1hmKYo0mYvVZgqQUNxAoF4IAzAjCX3BombmuIbNyNwnzeDoqw7aSynsCE9wS_es3Tz9emdV8BXWCI9IeEXFZBoSIJCm-1755TS5bRM" alt="Studio workspace">
-    <div class="p-line"></div>
-    <ul class="p-list">
-      <li><span class="num">01.</span>Served as Art Assistant for large-scale video installations showcased at the Kochi-Muziris Biennale.</li>
-      <li><span class="num">02.</span>Managed complex logistical frameworks for site-specific projects across diverse topographical landscapes.</li>
-    </ul>`
-  },
-  engagement: {
-    html: `<span class="p-label">[ Focus Study ]</span>
-    <div class="p-title" style="font-style:italic">The Architecture of Public Engagement</div>
-    <p class="p-body">Across both roles, the core objective remained constant: the translation of esoteric concepts into accessible, shared public knowledge through spatial design and narrative curation.</p>
-    <div class="p-line"></div>
-    <p class="p-body" style="font-style:italic;color:#888">"Every object has a biography; my job is to write the next chapter."</p>`
-  },
-  curations: {
-    html: `<span class="p-label">[ Exhibition & Research Catalog ]</span>
-    <div class="p-title-sans">Selected Curations</div>
-    <div style="margin-bottom:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span class="p-meta">EXHIBIT_01</span><span class="p-meta">BIENNALE</span></div>
-      <div style="font-family:'Instrument Serif',serif;font-size:20px;color:#1a1a1a;font-style:italic">Kochi-Muziris Chronicles</div>
+<!-- ░░ 02 STATEMENT ░░ -->
+<section id="statement" data-name="Statement">
+  <div class="pane">
+    <div class="eyebrow">Curatorial Statement</div>
+    <p class="big" id="stmt-text">I understand exhibitions not as displays, but as <em>processes</em> — involving coordination, spatial thinking, and audience engagement. I am drawn to how curatorial decisions and production frameworks shape the way art is <em>experienced</em>.</p>
+    <div class="langs">
+      <div><div class="k">Languages</div><div class="v serif italic">English</div></div>
+      <div><div class="k">·</div><div class="v serif italic">Bengali</div></div>
+      <div><div class="k">·</div><div class="v serif italic">Hindi</div></div>
+      <div><div class="k">Degree</div><div class="v serif italic">BFA, Contemporary Art</div></div>
     </div>
-    <div style="margin-bottom:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span class="p-meta">EXHIBIT_02</span><span class="p-meta">GALLERY</span></div>
-      <div style="font-family:'Instrument Serif',serif;font-size:20px;color:#1a1a1a;font-style:italic">The Science Gallery: Intersections</div>
+  </div>
+</section>
+
+<!-- ░░ 03 WORK — HORIZONTAL GALLERY ░░ -->
+<section id="work-h" data-name="Work History">
+  <div id="work-track">
+    <!-- exhibits injected by JS -->
+  </div>
+  <div class="hcap" id="hcap">Exhibit 01 — Gallery West Wing</div>
+</section>
+
+<!-- ░░ 04 EDUCATION ░░ -->
+<section id="edu" data-name="Education">
+  <div class="pane">
+    <div class="eyebrow">Provenance — Education</div>
+    <div class="grid">
+      <div class="cell reveal">
+        <div class="yr">SEP 2021 — MAY 2022</div>
+        <h3>Bachelor of Fine Arts<br><span class="italic serif" style="color:var(--accent)">Contemporary Art Practices</span></h3>
+        <div class="sch">SMIADT — Srishti Manipal, Bangalore</div>
+      </div>
+      <div class="cell reveal">
+        <div class="yr">MAR 2004 — MAR 2020</div>
+        <h3>High School Diploma</h3>
+        <div class="sch">Modern High School For Girls — Kolkata, WB</div>
+      </div>
     </div>
-    <div style="margin-bottom:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span class="p-meta">EXHIBIT_03</span><span class="p-meta">IMMERSIVE</span></div>
-      <div style="font-family:'Instrument Serif',serif;font-size:20px;color:#1a1a1a;font-style:italic">Materiality & Silence</div>
+  </div>
+</section>
+
+<!-- ░░ 05 PRACTICE — CERTS + SKILLS ░░ -->
+<section id="practice" data-name="The Toolkit">
+  <div class="pane">
+    <div class="eyebrow">The Curator's Toolkit</div>
+    <div class="cols">
+      <div>
+        <h2>Instruments<br>of practice.</h2>
+        <ul class="certs">
+          <li><span class="c-name serif">IELTS</span><span class="c-meta">Certified</span></li>
+          <li><span class="c-name serif">ICSE — ISC</span><span class="c-meta">Board</span></li>
+          <li><span class="c-name serif">Curatorial Internship</span><span class="c-meta">Experimenter · Jul 2022</span></li>
+          <li><span class="c-name serif">Data Entry for Beginners</span><span class="c-meta">Udemy · Aug 2022</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="skillhead">Competencies — 14 instruments</div>
+        <div class="skills" id="skills"></div>
+      </div>
     </div>
-    <div style="margin-bottom:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span class="p-meta">2023.11.12</span><span class="p-meta">ESSAY</span></div>
-      <div style="font-family:'Instrument Serif',serif;font-size:18px;color:#1a1a1a">Digital Disruption in Traditional Spaces</div>
+  </div>
+</section>
+
+<!-- ░░ 06 CONTACT ░░ -->
+<section id="contact" data-name="Guestbook">
+  <div>
+    <div class="eyebrow">The Guestbook</div>
+    <div class="lead">Let's <em>curate</em><br>something.</div>
+  </div>
+  <div>
+    <div class="rows">
+      <a href="mailto:noyonikapalit2@gmail.com"><div class="k">Email</div><div class="v">noyonikapalit2@gmail.com</div></a>
+      <a href="tel:9836050167"><div class="k">Telephone</div><div class="v">+91 983-605-0167</div></a>
+      <a href="https://linkedin.com/in/noyonika-palit-874a9b1bb" target="_blank"><div class="k">LinkedIn</div><div class="v">noyonika-palit</div></a>
+      <a href="https://www.instagram.com/noyyarts/" target="_blank"><div class="k">Instagram</div><div class="v">@noyyarts</div></a>
+      <div><div class="k">Based In</div><div class="v">Bangalore, KA 560065</div></div>
     </div>
-    <div style="margin-bottom:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.06)">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span class="p-meta">2022.08.05</span><span class="p-meta">SYMPOSIUM</span></div>
-      <div style="font-family:'Instrument Serif',serif;font-size:18px;color:#1a1a1a">The Ethics of the Curated Object</div>
+    <div class="foot">
+      <span>© 2026 Noyonika Palit</span>
+      <span>Curated Portfolio Exhibition</span>
+      <span>End of Tour ✦</span>
     </div>
-    <div style="padding:12px 0">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><span class="p-meta">2021.03.20</span><span class="p-meta">PUBLICATION</span></div>
-      <div style="font-family:'Instrument Serif',serif;font-size:18px;color:#1a1a1a">Spatial Memory: A Curatorial Review</div>
-    </div>`
-  },
-  education: {
-    html: `<span class="p-label">[ Record No. 2018-022 ]</span>
-    <div class="p-title" style="font-style:italic">Bachelor of Fine Arts</div>
-    <p class="p-body">Srishti Manipal Institute of Art, Design and Technology (SMIADT)</p>
-    <div class="p-line"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div><span class="p-meta">MAJORS</span><p class="p-body" style="margin-top:4px;font-size:13px;color:#1a1a1a">Experimental Media Arts, Curatorial Praxis</p></div>
-      <div><span class="p-meta">LOCATION</span><p class="p-body" style="margin-top:4px;font-size:13px;color:#1a1a1a">Bangalore, IN</p></div>
-    </div>
-    <div class="p-line"></div>
-    <span class="p-label" style="margin-top:12px">[ Record No. 2014-001 ]</span>
-    <div style="font-family:'Instrument Serif',serif;font-size:22px;color:#1a1a1a;margin-bottom:8px">High School Diploma</div>
-    <p class="p-body" style="font-size:13px">Major in Humanities and Fine Arts. Focus on Literature, Psychology, and Media Studies.</p>`
-  },
-  certs: {
-    html: `<span class="p-label">[ Archived Documents ]</span>
-    <div class="p-title-sans">Certifications</div>
-    <div style="border:1px solid rgba(0,0,0,0.06);padding:16px;margin-bottom:12px">
-      <span class="p-meta">CERT_08</span>
-      <div style="font-family:'Instrument Serif',serif;font-size:20px;margin:8px 0;font-style:italic">Curatorial Internship</div>
-      <p class="p-body" style="font-size:13px">Experimenter Kolkata — Immersive training in gallery management, exhibition design, and archival research.</p>
-      <span class="p-meta">DATED: 2022.06.15</span>
-    </div>
-    <div style="border:1px solid rgba(0,0,0,0.06);padding:16px">
-      <span class="p-meta">CERT_09</span>
-      <div style="font-family:'Instrument Serif',serif;font-size:20px;margin:8px 0;font-style:italic">IELTS Academic</div>
-      <p class="p-body" style="font-size:13px">Validated proficiency in English language for international academic collaboration.</p>
-      <span class="p-meta">SCORE: 8.5 / 9.0</span>
-    </div>`
-  },
-  skills: {
-    html: `<span class="p-label">[ Inventory No. 001–005 ]</span>
-    <div class="p-title" style="font-style:italic">Instruments of Practice</div>
-    <div class="p-skill"><span class="p-skill-name">Critical Thinking</span><div class="p-skill-bar"><div class="p-skill-fill" style="width:100%"></div></div></div>
-    <div class="p-skill"><span class="p-skill-name">Curatorial Writing</span><div class="p-skill-bar"><div class="p-skill-fill" style="width:100%"></div></div></div>
-    <div class="p-skill"><span class="p-skill-name">Communication</span><div class="p-skill-bar"><div class="p-skill-fill" style="width:90%"></div></div></div>
-    <div class="p-skill"><span class="p-skill-name">Logistics</span><div class="p-skill-bar"><div class="p-skill-fill" style="width:85%"></div></div></div>
-    <div class="p-skill"><span class="p-skill-name">Narrative Design</span><div class="p-skill-bar"><div class="p-skill-fill" style="width:75%"></div></div></div>
-    <div class="p-line"></div>
-    <img class="p-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKRnXN2Q5lNFJvECiAX_jOqT3GzK6_6-TuSLo15mZqZy83AE-n7KxupR4ESjgebN5jvDzRYPhYKDIogywP6CYSMCSLiTeQZKT52xs6cxheqoDmU8s52PNhVmr2JWTqN3Zv7JiMCxxe1hPs56lwm7weiONHWIJK_q6BFTvRdDWxgB6yJyTdO-yloiC-2In_r7yessFt5dqPiJiOjEwR34MsGCMPsmwHigdT2ioy6W5sIpkAViunXOF2km3c_sevzjtuKimi3E1daBU" alt="Drafting table">`
-  },
-  contact: {
-    html: `<span class="p-label">[ Direct Communications ]</span>
-    <div class="p-title" style="font-style:italic">The Guestbook</div>
-    <p class="p-body">Before you exit the gallery, reach out for future collaborations.</p>
-    <div class="p-line"></div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px"><span class="p-meta" style="width:60px">EMAIL</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:#1a1a1a">noyonika.palit@curate.com</span></div>
-      <div style="display:flex;align-items:center;gap:10px"><span class="p-meta" style="width:60px">LINKEDIN</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:#1a1a1a">linkedin.com/in/npalit</span></div>
-      <div style="display:flex;align-items:center;gap:10px"><span class="p-meta" style="width:60px">INSTA</span><span style="font-family:'Space Mono',monospace;font-size:12px;color:#1a1a1a">@noyonika.curates</span></div>
-    </div>
-    <div class="p-line"></div>
-    <span class="p-meta">LOCATION</span>
-    <p class="p-body" style="margin-top:4px">Currently based in Mumbai, India. Open to international commissions.</p>
-    <img class="p-img" style="margin-top:8px;opacity:0.5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBti4vqNkjmENZj380eMoP_2-oQvvEPsibR4DY_JGbwuHVKxSuV5ZycDrVZZQiYuwSep1cn-ySmBrw6InW9yD5VacgVRdWMdO6n7Y-7VLTzRFWXHb0FRlrXl6V05hhYWegm6Ex6bLRoUxMsg6pzXWdssjdR07ayau0Zwwq1w8ylRvvcfs_cqxP04tKGNeBGhERvgO0n8o1V10wb5EHtvsoPnlI4Or9Irlo1oxrzQs89yIWXIw2Mu8NeJj9o_zUkbVyUFxvRQIlDxW4" alt="Mumbai">`
-  },
-  final: {
-    html: `<span class="p-label">[ End of Exhibition ]</span>
-    <div class="p-title" style="font-style:italic">Thank you for visiting.</div>
-    <p class="p-body">This exhibition was curated as a spatial narrative — a walk through the professional life and practice of Noyonika Palit.</p>
-    <div class="p-line"></div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:8px"><span class="p-meta">✦ IELTS Certified</span></div>
-      <div style="display:flex;align-items:center;gap:8px"><span class="p-meta">✦ Kochi Biennale 2022</span></div>
-      <div style="display:flex;align-items:center;gap:8px"><span class="p-meta">✦ Science Gallery</span></div>
-    </div>
-    <div class="p-line"></div>
-    <p class="p-meta" style="text-align:center">© 2024 NOYONIKA PALIT — CURATED PORTFOLIO EXHIBITION</p>`
-  }
-};
+  </div>
+</section>
 
-// ════════════════════════════════════════
-// THREE.JS SCENE
-// ════════════════════════════════════════
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a0a);
-scene.fog = new THREE.FogExp2(0x0a0a0a, 0.012);
-
-const camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 200);
-camera.position.set(0, 1.65, 3);
-
-const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.9;
-document.body.prepend(renderer.domElement);
-
-// Orbit Controls (limited look-around)
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableZoom = false;
-controls.enablePan = false;
-controls.enableDamping = true;
-controls.dampingFactor = 0.06;
-controls.rotateSpeed = 0.35;
-controls.minPolarAngle = Math.PI * 0.35;
-controls.maxPolarAngle = Math.PI * 0.65;
-
-// ════════════════════════════════════════
-// MATERIALS
-// ════════════════════════════════════════
-const wallMat = new THREE.MeshStandardMaterial({ color:0xf0eeeb, roughness:0.92, metalness:0 });
-const floorMat = new THREE.MeshStandardMaterial({ color:0xc8c5c0, roughness:0.3, metalness:0.05 });
-const ceilMat = new THREE.MeshStandardMaterial({ color:0xf5f5f3, roughness:1, metalness:0 });
-const frameMat = new THREE.MeshStandardMaterial({ color:0x1a1a1a, roughness:0.3, metalness:0.7 });
-const canvasMat = new THREE.MeshStandardMaterial({ color:0xfaf9f6, roughness:0.95 });
-const darkCanvasMat = new THREE.MeshStandardMaterial({ color:0xe8e5e0, roughness:0.9 });
-const pedestalMat = new THREE.MeshStandardMaterial({ color:0xe0ddd8, roughness:0.5, metalness:0.1 });
-const accentMat = new THREE.MeshStandardMaterial({ color:0x1a1a1a, roughness:0.2, metalness:0.85 });
-
-// ════════════════════════════════════════
-// GALLERY GEOMETRY
-// ════════════════════════════════════════
-function addPlane(w,h,pos,rot,mat,shadow=false) {
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w,h), mat);
-  m.position.set(...pos); m.rotation.set(...rot);
-  if(shadow) m.receiveShadow = true;
-  scene.add(m); return m;
-}
-
-// Build each room
-ROOMS.forEach(room => {
-  const { z, depth, width } = room;
-  const cz = z - depth/2;
-  const h = 4.8;
-  // Floor
-  addPlane(width, depth, [0,0,cz], [-Math.PI/2,0,0], floorMat, true);
-  // Ceiling
-  addPlane(width, depth, [0,h,cz], [Math.PI/2,0,0], ceilMat);
-  // Left wall
-  addPlane(depth, h, [-width/2,h/2,cz], [0,Math.PI/2,0], wallMat, true);
-  // Right wall
-  addPlane(depth, h, [width/2,h/2,cz], [0,-Math.PI/2,0], wallMat, true);
-});
-
-// Back wall (entrance)
-addPlane(4, 4.8, [0,2.4,1], [0,0,0], wallMat);
-// End wall (guestbook)
-addPlane(10, 4.8, [0,2.4,-102], [0,0,0], wallMat);
-
-// Baseboards (thin dark strip at bottom of walls)
-const bbMat = new THREE.MeshStandardMaterial({color:0x2a2a2a, roughness:0.4, metalness:0.3});
-ROOMS.forEach(room => {
-  const { z, depth, width } = room;
-  const cz = z - depth/2;
-  const bbH = 0.08;
-  // Left baseboard
-  const bbL = new THREE.Mesh(new THREE.BoxGeometry(0.02, bbH, depth), bbMat);
-  bbL.position.set(-width/2+0.01, bbH/2, cz); scene.add(bbL);
-  // Right baseboard
-  const bbR = new THREE.Mesh(new THREE.BoxGeometry(0.02, bbH, depth), bbMat);
-  bbR.position.set(width/2-0.01, bbH/2, cz); scene.add(bbR);
-});
-
-// Transition walls (partial walls between rooms with doorway gaps)
-function addDoorwayWall(z, totalWidth, gapWidth) {
-  const sideW = (totalWidth - gapWidth) / 2;
-  if (sideW > 0.1) {
-    addPlane(sideW, 4.8, [-(gapWidth/2 + sideW/2), 2.4, z], [0,0,0], wallMat);
-    addPlane(sideW, 4.8, [(gapWidth/2 + sideW/2), 2.4, z], [0,0,0], wallMat);
-  }
-}
-addDoorwayWall(-10, 12, 3.5);   // entrance→foyer
-addDoorwayWall(-26, 14, 4);     // foyer→exhibition
-addDoorwayWall(-46, 10, 3.5);   // exhibition→curations
-addDoorwayWall(-60, 10, 3.5);   // curations→archives
-addDoorwayWall(-76, 12, 3.5);   // archives→toolkit
-addDoorwayWall(-90, 10, 3.5);   // toolkit→guestbook
-
-// ════════════════════════════════════════
-// PICTURE FRAMES
-// ════════════════════════════════════════
-function addFrame(fw, fh, pos, ry, hasDarkCanvas=false) {
-  const g = new THREE.Group();
-  const t=0.035, d=0.025;
-  const barH = new THREE.BoxGeometry(fw+t*2, t, d);
-  const barV = new THREE.BoxGeometry(t, fh, d);
-  [fh/2, -fh/2].forEach(y => { const m=new THREE.Mesh(barH,frameMat); m.position.y=y; m.castShadow=true; g.add(m); });
-  [-fw/2, fw/2].forEach(x => { const m=new THREE.Mesh(barV,frameMat); m.position.x=x; m.castShadow=true; g.add(m); });
-  const cvs = new THREE.Mesh(new THREE.PlaneGeometry(fw-0.02, fh-0.02), hasDarkCanvas ? darkCanvasMat : canvasMat);
-  cvs.position.z = -0.005; g.add(cvs);
-  g.position.set(...pos); g.rotation.y = ry;
-  scene.add(g); return g;
-}
-
-// Image loader
-const texLoader = new THREE.TextureLoader();
+<script>
+/* ═══════════════ DATA ═══════════════ */
 const IMG = {
-  floorplan: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAiR1J-DNARqSWr_OSm0UM51YZwoBS-whFg_zKOS3bHpCLtp3FK3ccOKms2nj4j6HRvTi1iMM-vU2BcRrbZQVkq1XdfVswgHzKLOJXT8047z9TtwNHMKjVr3W3HCU8tI488-9SyU4_NVIf931dBgISWCkw22QKb-acwCo3ENv1xO9zSW-ADuRpKUg4XeRrY2u7oSvvU_zWTTBPtcA7m7yhfah8kTw6YdQvWChSjF8VmCUmqrucfdc3XcC4aFjNtkioDjcNasW7ibWs',
-  science: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBqWoPpl7BIygBCma2jQzwtyZQXc2hxSuvZk7qDron2xvKzCAcp9ALYhYaQ8kA5xCEsMoAv6UqtWRmhUhmqM8rDQYwrv2EAJX6ghTNCp_RKA_FNoopmmy1vKuWbjJoEfbCYCVtYB15JOKyH4jqieTVzA-ycuMqjr1otwLJNVQqo2QRt7uy7nSB5kye-CDcpZX-NwPGAnIxVqo28iGPMGoNPSHCuxEgHLOqcrMNMk8sOeTUh0P1sTxLTxsAAJw8A_gq0Iy1QEFX23JY',
-  amshu: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAAETmj8Wh9cMcmtQfuapyYJArQ7YhYaPKfLJUO0aM4Os74w_jAAlKgcYufJ6X7h0aTw5rO6yKXvbkAaCEBNdJfvGGQ-sXE26Rh_fuLebDpxkRyY1Bh1NVkAjaXwEsjGtx2ve5Jrq_rzWDY4GpHAbUih5G86rXhbLXHuSdWL1hmKYo0mYvVZgqQUNxAoF4IAzAjCX3BombmuIbNyNwnzeDoqw7aSynsCE9wS_es3Tz9emdV8BXWCI9IeEXFZBoSIJCm-1755TS5bRM',
-  toolkit: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBKRnXN2Q5lNFJvECiAX_jOqT3GzK6_6-TuSLo15mZqZy83AE-n7KxupR4ESjgebN5jvDzRYPhYKDIogywP6CYSMCSLiTeQZKT52xs6cxheqoDmU8s52PNhVmr2JWTqN3Zv7JiMCxxe1hPs56lwm7weiONHWIJK_q6BFTvRdDWxgB6yJyTdO-yloiC-2In_r7yessFt5dqPiJiOjEwR34MsGCMPsmwHigdT2ioy6W5sIpkAViunXOF2km3c_sevzjtuKimi3E1daBU',
-  mumbai: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBti4vqNkjmENZj380eMoP_2-oQvvEPsibR4DY_JGbwuHVKxSuV5ZycDrVZZQiYuwSep1cn-ySmBrw6InW9yD5VacgVRdWMdO6n7Y-7VLTzRFWXHb0FRlrXl6V05hhYWegm6Ex6bLRoUxMsg6pzXWdssjdR07ayau0Zwwq1w8ylRvvcfs_cqxP04tKGNeBGhERvgO0n8o1V10wb5EHtvsoPnlI4Or9Irlo1oxrzQs89yIWXIw2Mu8NeJj9o_zUkbVyUFxvRQIlDxW4',
-  kochi: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD5bCcMU2b5qYfB-CDdU_ckHjnCqZu1iGUojGxoqzGRmBfTBLZNuaGwMaE-1LKlFkNP4Dt5Y1c41dxORfb5EI7v6AncWdVqcK0-XSfBYOdQ4Qxj2bfJKqrjGJIQQEMl0Bk2WL2oJdU0-AksFfFGYMD8cxzaA-X3Bqkqj4G9vr9aELVPzA4i8AWRe9mWQww0vWG4XjKOqcFwCWxHmQ1eF96pwQSEYbvO5QSuL5R9Fa4XCwfMniQD8dAPlgvr-2Uu2yqL5hZhH_rW8h4',
-  experimenter: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC3KnLiGq3DUzKNPzfHvvFqxQZPfvCn9n40PpkEBV3y5aN3TuQ-jFhb27Aum9eTqV_UkMFLhN8sdKM2JhuwZxUijYpGfzc9SjmFbwR1tPWLjfcHq1k6qxFJCkUSmtgvYzTVAtN8vFnHb9VGP2EcPpRYMv6XOe3KMqSGeFPaHnTjdK1PBf3SKnqhPwQnxLbZMhLsm-3p3H4eTt5TdaZ8UHUICi-5fDNbZCWH8aYNwT8dqmwj-1cxGYOzFP4HhK9vlIFaVx6PJMINUhOjU',
+  science:'https://lh3.googleusercontent.com/aida-public/AB6AXuBqWoPpl7BIygBCma2jQzwtyZQXc2hxSuvZk7qDron2xvKzCAcp9ALYhYaQ8kA5xCEsMoAv6UqtWRmhUhmqM8rDQYwrv2EAJX6ghTNCp_RKA_FNoopmmy1vKuWbjJoEfbCYCVtYB15JOKyH4jqieTVzA-ycuMqjr1otwLJNVQqo2QRt7uy7nSB5kye-CDcpZX-NwPGAnIxVqo28iGPMGoNPSHCuxEgHLOqcrMNMk8sOeTUh0P1sTxLTxsAAJw8A_gq0Iy1QEFX23JY',
+  amshu:'https://lh3.googleusercontent.com/aida-public/AB6AXuAAETmj8Wh9cMcmtQfuapyYJArQ7YhYaPKfLJUO0aM4Os74w_jAAlKgcYufJ6X7h0aTw5rO6yKXvbkAaCEBNdJfvGGQ-sXE26Rh_fuLebDpxkRyY1Bh1NVkAjaXwEsjGtx2ve5Jrq_rzWDY4GpHAbUih5G86rXhbLXHuSdWL1hmKYo0mYvVZgqQUNxAoF4IAzAjCX3BombmuIbNyNwnzeDoqw7aSynsCE9wS_es3Tz9emdV8BXWCI9IeEXFZBoSIJCm-1755TS5bRM',
+  kochi:'https://lh3.googleusercontent.com/aida-public/AB6AXuD5bCcMU2b5qYfB-CDdU_ckHjnCqZu1iGUojGxoqzGRmBfTBLZNuaGwMaE-1LKlFkNP4Dt5Y1c41dxORfb5EI7v6AncWdVqcK0-XSfBYOdQ4Qxj2bfJKqrjGJIQQEMl0Bk2WL2oJdU0-AksFfFGYMD8cxzaA-X3Bqkqj4G9vr9aELVPzA4i8AWRe9mWQww0vWG4XjKOqcFwCWxHmQ1eF96pwQSEYbvO5QSuL5R9Fa4XCwfMniQD8dAPlgvr-2Uu2yqL5hZhH_rW8h4',
+  experimenter:'https://lh3.googleusercontent.com/aida-public/AB6AXuC3KnLiGq3DUzKNPzfHvvFqxQZPfvCn9n40PpkEBV3y5aN3TuQ-jFhb27Aum9eTqV_UkMFLhN8sdKM2JhuwZxUijYpGfzc9SjmFbwR1tPWLjfcHq1k6qxFJCkUSmtgvYzTVAtN8vFnHb9VGP2EcPpRYMv6XOe3KMqSGeFPaHnTjdK1PBf3SKnqhPwQnxLbZMhLsm-3p3H4eTt5TdaZ8UHUICi-5fDNbZCWH8aYNwT8dqmwj-1cxGYOzFP4HhK9vlIFaVx6PJMINUhOjU',
+  toolkit:'https://lh3.googleusercontent.com/aida-public/AB6AXuBKRnXN2Q5lNFJvECiAX_jOqT3GzK6_6-TuSLo15mZqZy83AE-n7KxupR4ESjgebN5jvDzRYPhYKDIogywP6CYSMCSLiTeQZKT52xs6cxheqoDmU8s52PNhVmr2JWTqN3Zv7JiMCxxe1hPs56lwm7weiONHWIJK_q6BFTvRdDWxgB6yJyTdO-yloiC-2In_r7yessFt5dqPiJiOjEwR34MsGCMPsmwHigdT2ioy6W5sIpkAViunXOF2km3c_sevzjtuKimi3E1daBU',
+  floorplan:'https://lh3.googleusercontent.com/aida-public/AB6AXuAiR1J-DNARqSWr_OSm0UM51YZwoBS-whFg_zKOS3bHpCLtp3FK3ccOKms2nj4j6HRvTi1iMM-vU2BcRrbZQVkq1XdfVswgHzKLOJXT8047z9TtwNHMKjVr3W3HCU8tI488-9SyU4_NVIf931dBgISWCkw22QKb-acwCo3ENv1xO9zSW-ADuRpKUg4XeRrY2u7oSvvU_zWTTBPtcA7m7yhfah8kTw6YdQvWChSjF8VmCUmqrucfdc3XcC4aFjNtkioDjcNasW7ibWs',
+  mumbai:'https://lh3.googleusercontent.com/aida-public/AB6AXuBti4vqNkjmENZj380eMoP_2-oQvvEPsibR4DY_JGbwuHVKxSuV5ZycDrVZZQiYuwSep1cn-ySmBrw6InW9yD5VacgVRdWMdO6n7Y-7VLTzRFWXHb0FRlrXl6V05hhYWegm6Ex6bLRoUxMsg6pzXWdssjdR07ayau0Zwwq1w8ylRvvcfs_cqxP04tKGNeBGhERvgO0n8o1V10wb5EHtvsoPnlI4Or9Irlo1oxrzQs89yIWXIw2Mu8NeJj9o_zUkbVyUFxvRQIlDxW4',
 };
 
-function addFrameWithImage(fw, fh, pos, ry, imageUrl) {
-  const g = addFrame(fw, fh, pos, ry);
-  if(imageUrl) {
-    texLoader.load(imageUrl, tex => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      const imgMat = new THREE.MeshStandardMaterial({ map:tex, roughness:0.85 });
-      const cvs = g.children.find(c => c.geometry?.type === 'PlaneGeometry');
-      if(cvs) cvs.material = imgMat;
+const WORK = [
+  { acc:'SGB · 2025', wing:'West Wing', img:IMG.science, role:'Public Engagement', inst:'Science Gallery Bengaluru', place:'Bengaluru, India — Jun 2025 – Current',
+    notes:['Led targeted outreach for diverse publics; conducted 10,000+ conversations spanning the natural and social sciences.',
+           'Facilitated walk-throughs for the current exhibition season, ‘Calorie’, and student programmes.',
+           'Assisted the production team with install, de-install and maintenance of exhibits; met artists on a curatorial level.'] },
+  { acc:'AC · 2024', wing:'Studio', img:IMG.amshu, role:'Art Assistant', inst:'Amshu Chukki (Remote)', place:'Bangalore, India — Jan 2024 – Jun 2025',
+    notes:['Assisted grant-proposal writing, securing additional funding for future projects.',
+           'Managed multiple tasks and deadlines, improving project timelines and workflow.',
+           'Increased artist exposure via submissions to galleries, competitions and publications.'] },
+  { acc:'KSB · 2022', wing:'North Hall', img:IMG.kochi, role:'Curatorial Fellow', inst:'Kochi Students Biennale ’22–23', place:'Kochi, India — Sep 2022 – Nov 2022',
+    notes:['Curatorial Assistant to KSB curator Afrah Shafiq; co-curator to artists across Karnataka, Tamil Nadu, Pondicherry and Goa.',
+           'Drafted label texts and catalog essays; organised exhibition files, databases and lender communications.',
+           'Co-curated workshops in Goa and Karnataka alongside Afrah Shafiq and Amshu Chukki.'] },
+  { acc:'EXP · 2022', wing:'East Room', img:IMG.experimenter, role:'Curatorial Intern', inst:'Experimenter, Kolkata', place:'Kolkata, WB — Jul 2022',
+    notes:['Transcribed an artist talk with cloth-maker Kallol Datta for his solo, Volume 3 || Issue 2.',
+           'Job-shadowed the install of the late Kanishka Raja’s paintings; managed a mailing list of 600+ recipients.',
+           'Sat in on meetings with Bani Abidi, Radhika Khimji, Alexandra Bachzetsis and Praneet Soi.'] },
+  { acc:'GB · 2022', wing:'Print Room', img:IMG.toolkit, role:'Freelance Artist', inst:'Glamour Boutique, Kolkata', place:'Kolkata, WB — Jul 2022',
+    notes:['Illustrated pen-and-ink works for an upcoming saree collection.',
+           'Designed custom artwork to clients’ creative vision; conducted workshops for aspiring artists.',
+           'Promoted the practice across social platforms, engaging clients and collaborators.'] },
+  { acc:'SM · 2021', wing:'Atrium', img:IMG.floorplan, role:'Exhibiting Team', inst:'Srishti-Manipal Open House ’21', place:'Bengaluru, IN — Apr 2022',
+    notes:['Prioritised tasks and prepared written communications, reports and documents.',
+           'Used critical thinking to break down problems, evaluate solutions and decide.',
+           'Delivered within tight deadlines across a fast-paced, collaborative environment.'] },
+  { acc:'SD · 2021', wing:'Annexe', img:IMG.mumbai, role:'Design Collaborator', inst:'Signa Design — Rashmin Perla', place:'Kolkata, IN — Jul 2021 – Aug 2021',
+    notes:['Combined visual-art skills with interior design in an interdisciplinary practice.',
+           'Collaborated to achieve target results and resolve issues, lifting client satisfaction.',
+           'Learned and applied new skills quickly to improve day-to-day efficiency.'] },
+];
+
+const SKILLS = ['Public Engagement','Planning & Coordination','Critical Thinking','Written Communication','Documentation & Reporting','Office Administration','Interpersonal Communication','Operations & Efficiency','Spreadsheet Creation','Spreadsheet Tracking','Internal Communications','Teamwork & Collaboration','Time Management','Telephone Etiquette'];
+
+/* ═══════════════ BUILD WORK EXHIBITS ═══════════════ */
+const track = document.getElementById('work-track');
+WORK.forEach((w,i)=>{
+  const el = document.createElement('article');
+  el.className='exhibit';
+  el.innerHTML = `
+    <div class="art">
+      <span class="tag">${w.acc} · ${w.wing}</span>
+      <img src="${w.img}" alt="${w.role}" loading="lazy">
+    </div>
+    <div class="label">
+      <div class="acc"><span>Exhibit ${String(i+1).padStart(2,'0')} / ${String(WORK.length).padStart(2,'0')}</span><span>${w.acc}</span></div>
+      <h3>${w.role}</h3>
+      <div class="inst">${w.inst}</div>
+      <div class="place">${w.place}</div>
+      <ul>${w.notes.map((n,j)=>`<li><span class="no">0${j+1}</span><span>${n}</span></li>`).join('')}</ul>
+    </div>`;
+  track.appendChild(el);
+});
+
+/* skills */
+const skl = document.getElementById('skills');
+SKILLS.forEach(s=>{ const sp=document.createElement('span'); sp.textContent=s; skl.appendChild(sp); });
+
+/* wrap statement words for reveal */
+(function(){
+  const el=document.getElementById('stmt-text');
+  const walk=(node)=>{
+    const kids=[...node.childNodes];
+    kids.forEach(n=>{
+      if(n.nodeType===3){
+        const frag=document.createDocumentFragment();
+        n.textContent.split(/(\s+)/).forEach(tok=>{
+          if(tok.trim()){const s=document.createElement('span');s.className='w';s.textContent=tok;frag.appendChild(s);}
+          else frag.appendChild(document.createTextNode(tok));
+        });
+        node.replaceChild(frag,n);
+      } else if(n.nodeType===1){ n.classList.add('w'); }
     });
-  }
-  return g;
-}
+  };
+  walk(el);
+})();
 
-// Foyer frames
-addFrame(2.4, 1.6, [-6.48, 1.8, -14], Math.PI/2);                         // intro text (blank canvas)
-addFrameWithImage(1.8, 1.4, [6.48, 1.8, -16], -Math.PI/2, IMG.floorplan);  // floor plan
-addFrame(1.2, 0.9, [-6.48, 1.8, -19], Math.PI/2);                         // decorative
-addFrame(1.0, 1.4, [6.48, 2.0, -20], -Math.PI/2, true);                   // decorative
+/* ═══════════════ LENIS + GSAP ═══════════════ */
+gsap.registerPlugin(ScrollTrigger);
+let lenis;
+let booted=false;
 
-// Exhibition frames
-addFrameWithImage(2.8, 2.0, [-7.48, 1.8, -30], Math.PI/2, IMG.science);   // Science Gallery
-addFrameWithImage(2.4, 1.6, [7.48, 1.8, -34], -Math.PI/2, IMG.amshu);     // Amshu Chukki
-addFrame(3.2, 2.2, [0, 1.8, -44.9], 0, true);                            // Public Engagement (dark canvas)
-addFrameWithImage(1.4, 1.0, [-7.48, 1.8, -36], Math.PI/2, IMG.kochi);     // Kochi image
-addFrame(1.4, 1.0, [7.48, 1.8, -38], -Math.PI/2, true);                   // decorative
+function boot(){
+  if(booted) return; booted=true;
+  lenis = new Lenis({ duration:1.15, easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)), smoothWheel:true, touchMultiplier:1.4 });
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add(t=>lenis.raf(t*1000));
+  gsap.ticker.lagSmoothing(0);
 
-// Curations frames (salon-style hang)
-addFrame(1.6, 1.2, [-5.48, 2.2, -48], Math.PI/2);
-addFrame(1.6, 1.2, [-5.48, 2.2, -51], Math.PI/2);
-addFrame(1.2, 0.9, [-5.48, 1.2, -49.5], Math.PI/2, true);
-addFrame(1.4, 1.0, [5.48, 1.8, -49], -Math.PI/2);
-addFrame(1.4, 1.0, [5.48, 1.8, -52], -Math.PI/2, true);
+  /* HERO intro */
+  const htl = gsap.timeline({defaults:{ease:'power4.out'}});
+  htl.from('#hero .kick',{y:20,opacity:0,duration:0.8})
+     .from('#hero h1 .l1',{yPercent:110,opacity:0,duration:1.1},'-=0.5')
+     .from('#hero h1 .l2',{yPercent:110,opacity:0,duration:1.1},'-=0.9')
+     .from('#hero .sub',{y:24,opacity:0,duration:0.9},'-=0.7')
+     .from('#hero .credit',{opacity:0,duration:0.8},'-=0.6')
+     .to('#portrait',{opacity:1,duration:1.2},'-=1.0')
+     .to('#portrait img',{scale:1,duration:1.6,ease:'power2.out'},'-=1.2');
 
-// Archives frames
-addFrame(2.2, 1.6, [-5.48, 1.8, -63], Math.PI/2);                           // Education
-addFrameWithImage(1.8, 1.4, [5.48, 1.8, -67], -Math.PI/2, IMG.experimenter); // Certs / Experimenter
-addFrame(1.0, 1.4, [-5.48, 2.0, -68], Math.PI/2, true);
+  /* HERO parallax out */
+  gsap.to('#hero h1',{yPercent:-14,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
+  gsap.to('#portrait',{yPercent:12,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
 
-// Toolkit frames
-addFrameWithImage(2.6, 1.8, [0, 1.8, -88.9], 0, IMG.toolkit);              // Skills (far wall)
-addFrame(1.6, 1.2, [-6.48, 1.8, -80], Math.PI/2, true);
+  /* STATEMENT word reveal */
+  gsap.to('#stmt-text .w',{opacity:1,stagger:0.03,ease:'none',
+    scrollTrigger:{trigger:'#statement',start:'top 62%',end:'center 45%',scrub:true}});
 
-// Guestbook frames
-addFrameWithImage(2.0, 1.4, [-5.48, 1.8, -93], Math.PI/2, IMG.mumbai);     // Contact
-addFrame(2.4, 1.6, [0, 1.8, -101.9], 0);                                   // Final wall
-
-// ════════════════════════════════════════
-// SCULPTURES
-// ════════════════════════════════════════
-const sculptures = [];
-
-// Foyer: Icosahedron on pedestal
-{ const p=new THREE.Mesh(new THREE.BoxGeometry(0.5,1,0.5),pedestalMat); p.position.set(3,0.5,-14); p.castShadow=true; scene.add(p);
-  const s=new THREE.Mesh(new THREE.IcosahedronGeometry(0.3,0),accentMat); s.position.set(3,1.3,-14); s.castShadow=true; scene.add(s); sculptures.push(s); }
-
-// Exhibition: Torus knot
-{ const p=new THREE.Mesh(new THREE.BoxGeometry(0.6,1.1,0.6),pedestalMat); p.position.set(0,0.55,-35); p.castShadow=true; scene.add(p);
-  const s=new THREE.Mesh(new THREE.TorusKnotGeometry(0.25,0.07,64,10,2,3),accentMat); s.position.set(0,1.5,-35); s.castShadow=true; scene.add(s); sculptures.push(s); }
-
-// Archives: Octahedron in glass
-{ const p=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.8,0.5),pedestalMat); p.position.set(0,0.4,-65); p.castShadow=true; scene.add(p);
-  const gl=new THREE.Mesh(new THREE.BoxGeometry(0.45,0.5,0.45),new THREE.MeshStandardMaterial({color:0xffffff,roughness:0.05,metalness:0.1,transparent:true,opacity:0.12}));
-  gl.position.set(0,1.05,-65); scene.add(gl);
-  const s=new THREE.Mesh(new THREE.OctahedronGeometry(0.12,0),accentMat); s.position.set(0,1.05,-65); scene.add(s); sculptures.push(s); }
-
-// Toolkit: Dodecahedron floating
-{ const s=new THREE.Mesh(new THREE.DodecahedronGeometry(0.35,0),new THREE.MeshStandardMaterial({color:0x222222,roughness:0.15,metalness:0.9}));
-  s.position.set(4,1.8,-82); s.castShadow=true; scene.add(s); sculptures.push(s); }
-
-// ════════════════════════════════════════
-// LIGHTING
-// ════════════════════════════════════════
-scene.add(new THREE.AmbientLight(0xffffff, 0.06));
-
-function spot(x,y,z, tx,ty,tz, int=3, angle=Math.PI/7) {
-  const s=new THREE.SpotLight(0xfff5e6,int,28,angle,0.55,1.3);
-  s.position.set(x,y,z); s.target.position.set(tx,ty,tz);
-  s.castShadow=true; s.shadow.mapSize.set(512,512); s.shadow.bias=-0.001;
-  scene.add(s); scene.add(s.target); return s;
-}
-function pointL(x,y,z,int=0.3,dist=16,col=0xfff5e6){ const l=new THREE.PointLight(col,int,dist); l.position.set(x,y,z); scene.add(l); }
-
-// Entrance
-spot(0,4.5,-3, 0,0,-8, 3, Math.PI/8);
-
-// Foyer
-spot(-3,4.5,-14, -6.4,1.8,-14, 2.5);   // intro text
-spot(3,4.5,-16, 6.4,1.8,-16, 2.5);      // floor plan
-spot(3,4.5,-14, 3,1.3,-14, 1.5);        // pedestal
-pointL(0,3.5,-16, 0.35, 18);
-
-// Exhibition
-spot(-4,4.6,-30, -7.4,1.8,-30, 3);
-spot(4,4.6,-34, 7.4,1.8,-34, 3);
-spot(0,4.6,-44, 0,1.8,-44.9, 2.5);
-spot(0,4.6,-35, 0,1.5,-35, 1.5);
-pointL(0,3.5,-35, 0.3, 22);
-
-// Curations
-spot(-2,4.5,-49, -5.4,1.8,-49, 2);
-spot(2,4.5,-51, 5.4,1.8,-51, 2);
-pointL(0,3.5,-50, 0.3, 14);
-
-// Archives
-spot(-2,4.2,-63, -5.4,1.8,-63, 2.5);
-spot(2,4.2,-67, 5.4,1.8,-67, 2.5);
-pointL(0,3,-65, 0.35, 16, 0xffe8c8);
-
-// Toolkit
-spot(0,4.5,-88, 0,1.8,-88.9, 3);
-spot(-3,4.5,-80, -6.4,1.8,-80, 2);
-spot(4,4.5,-82, 4,1.8,-82, 1.5);
-pointL(0,3.5,-82, 0.3, 18, 0xf0f0ff);
-
-// Guestbook
-spot(-2,4.5,-93, -5.4,1.8,-93, 2.5);
-spot(0,4.5,-101, 0,1.8,-101.9, 2.5);
-pointL(0,3,-95, 0.4, 18, 0xfff0d6);
-
-// ════════════════════════════════════════
-// PARTICLES
-// ════════════════════════════════════════
-const PC=200;
-const pp=new Float32Array(PC*3), pv=new Float32Array(PC*3);
-for(let i=0;i<PC;i++){
-  pp[i*3]=(Math.random()-0.5)*14; pp[i*3+1]=Math.random()*4.5; pp[i*3+2]=Math.random()*-104;
-  pv[i*3]=(Math.random()-0.5)*0.002; pv[i*3+1]=(Math.random()-0.5)*0.001; pv[i*3+2]=(Math.random()-0.5)*0.001;
-}
-const pg=new THREE.BufferGeometry(); pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
-const pm=new THREE.PointsMaterial({color:0xffffff,size:0.02,transparent:true,opacity:0.3,sizeAttenuation:true,depthWrite:false});
-const particles=new THREE.Points(pg,pm); scene.add(particles);
-
-// ════════════════════════════════════════
-// NAVIGATION STATE
-// ════════════════════════════════════════
-let currentVP = 0;
-let isAnimating = false;
-let autoTourActive = false;
-let autoTourTimer = null;
-
-const panelEl = document.getElementById('exhibit-panel');
-const panelContent = document.getElementById('panel-content');
-const roomLabel = document.getElementById('room-label');
-const vpCounter = document.getElementById('vp-counter');
-
-function showPanel(panelId, position) {
-  if(!panelId || !PANELS[panelId]) { hidePanel(); return; }
-  panelEl.className = `pos-${position||'right'}`;
-  panelContent.innerHTML = `<button class="panel-close" onclick="document.getElementById('exhibit-panel').classList.remove('open')">&times;</button>` + PANELS[panelId].html;
-  requestAnimationFrame(() => panelEl.classList.add('open'));
-}
-function hidePanel() { panelEl.classList.remove('open'); }
-
-function goToViewpoint(index, duration=1.8) {
-  if(isAnimating || index<0 || index>=VIEWPOINTS.length) return;
-  isAnimating = true;
-  hidePanel();
-
-  const vp = VIEWPOINTS[index];
-  const targetPos = new THREE.Vector3(...vp.pos);
-  const targetLook = new THREE.Vector3(...vp.look);
-
-  // Disable controls during animation
-  controls.enabled = false;
-
-  // Smooth look-target interpolation
-  const currentLook = controls.target.clone();
-
-  // Animate camera position
-  gsap.to(camera.position, {
-    x:targetPos.x, y:targetPos.y, z:targetPos.z,
-    duration, ease:'power2.inOut',
-    onComplete: () => {
-      controls.target.copy(targetLook);
-      controls.enabled = true;
-      controls.update();
-      isAnimating = false;
-      currentVP = index;
-      updateUI();
-      if(vp.panel) setTimeout(() => showPanel(vp.panel, vp.panelPos), 400);
-    }
+  /* ── WORK: horizontal gallery ── */
+  const distance = ()=> track.scrollWidth - window.innerWidth;
+  const hMove = gsap.to(track,{ x:()=>-distance(), ease:'none',
+    scrollTrigger:{ trigger:'#work-h', start:'top top', end:()=>'+='+distance(),
+      pin:true, scrub:1, invalidateOnRefresh:true,
+      onUpdate:self=>{
+        const idx=Math.min(WORK.length, Math.floor(self.progress*WORK.length)+1);
+        document.getElementById('hcap').textContent=`Exhibit ${String(idx).padStart(2,'0')} — ${WORK[idx-1]?.wing||''} `;
+      }
+    }});
+  /* per-exhibit image parallax + label rise, tied to horizontal scroll */
+  gsap.utils.toArray('.exhibit').forEach(ex=>{
+    const img=ex.querySelector('.art img');
+    gsap.fromTo(img,{scale:1.18,xPercent:-4},{scale:1.02,xPercent:4,ease:'none',
+      scrollTrigger:{trigger:ex,containerAnimation:hMove,start:'left right',end:'right left',scrub:true}});
+    gsap.from(ex.querySelector('.label'),{opacity:0,y:40,
+      scrollTrigger:{trigger:ex,containerAnimation:hMove,start:'left 75%',end:'left 30%',scrub:true}});
   });
 
-  // Animate look-at target (drives camera.lookAt each frame)
-  gsap.to(currentLook, {
-    x:targetLook.x, y:targetLook.y, z:targetLook.z,
-    duration, ease:'power2.inOut',
-    onUpdate: () => { controls.target.copy(currentLook); }
+  /* generic reveals */
+  gsap.utils.toArray('.reveal').forEach(el=>{
+    gsap.to(el,{opacity:1,y:0,duration:1,ease:'power3.out',
+      scrollTrigger:{trigger:el,start:'top 82%'}});
+  });
+  gsap.from('#practice .skills span',{opacity:0,y:16,stagger:0.04,duration:0.6,ease:'power2.out',
+    scrollTrigger:{trigger:'#practice .skills',start:'top 78%'}});
+  gsap.from('#practice .certs li',{opacity:0,x:-20,stagger:0.08,duration:0.7,ease:'power3.out',
+    scrollTrigger:{trigger:'#practice .certs',start:'top 78%'}});
+  gsap.from('#contact .lead',{opacity:0,y:40,duration:1.1,ease:'power4.out',
+    scrollTrigger:{trigger:'#contact',start:'top 65%'}});
+  gsap.from('#contact .rows a, #contact .rows div',{opacity:0,y:20,stagger:0.06,duration:0.6,
+    scrollTrigger:{trigger:'#contact .rows',start:'top 82%'}});
+
+  /* ── section tracker for chrome ── */
+  const sections=[...document.querySelectorAll('section[data-name]')];
+  const rail=document.getElementById('rail');
+  sections.forEach((s,i)=>{
+    const b=document.createElement('button'); b.innerHTML='<i></i>';
+    b.addEventListener('click',()=>lenis.scrollTo(s,{offset:0}));
+    rail.appendChild(b);
+    ScrollTrigger.create({trigger:s,start:'top 55%',end:'bottom 55%',
+      onToggle:self=>{ if(self.isActive){
+        document.getElementById('sec-index').textContent=String(i).padStart(2,'0')+' / '+String(sections.length-1).padStart(2,'0');
+        document.getElementById('sec-name').textContent=s.dataset.name;
+        [...rail.children].forEach((c,ci)=>c.classList.toggle('on',ci===i));
+      }}});
   });
 
-  currentVP = index;
-  updateUI();
+  /* hide scroll cue after first scroll */
+  ScrollTrigger.create({start:'top -80',onToggle:self=>{document.getElementById('scrollcue').style.opacity=self.isActive?0:1;}});
+
+  ScrollTrigger.refresh();
 }
 
-function updateUI() {
-  const vp = VIEWPOINTS[currentVP];
-  const room = ROOMS.find(r => r.id === vp.room);
-  roomLabel.textContent = `[ ${String(currentVP).padStart(2,'0')}. ${vp.label} ]`;
-  vpCounter.textContent = `${String(currentVP+1).padStart(2,'0')} / ${VIEWPOINTS.length}`;
+/* ═══════════════ LOADER ═══════════════ */
+(function(){
+  const name='Noyonika Palit';
+  const host=document.getElementById('lname');
+  name.split('').forEach(ch=>{const s=document.createElement('span');s.textContent=ch===' '?' ':ch;s.style.opacity=0;host.appendChild(s);});
+  const tl=gsap.timeline();
+  tl.to('#lname span',{opacity:1,y:0,stagger:0.035,duration:0.5,ease:'power2.out'})
+    .to('#loader .lbar i',{scaleX:1,duration:1.0,ease:'power2.inOut'},'-=0.3')
+    .to('#loader',{yPercent:-100,duration:1.0,ease:'power4.inOut',delay:0.2,
+      onComplete:()=>{document.getElementById('loader').remove();document.body.classList.remove('lenis-stopped');}});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+})();
 
-  document.getElementById('nav-prev').classList.toggle('disabled', currentVP <= 0);
-  document.getElementById('nav-next').classList.toggle('disabled', currentVP >= VIEWPOINTS.length-1);
-
-  // Update fog color per room
-  if(room) {
-    const col = new THREE.Color(room.color);
-    scene.fog.color.lerp(col, 0.5);
-    scene.background.lerp(col, 0.5);
-  }
-
-  drawMinimap();
-}
-
-// ════════════════════════════════════════
-// MINIMAP
-// ════════════════════════════════════════
-function drawMinimap() {
-  const c = document.getElementById('minimap-canvas');
-  const ctx = c.getContext('2d');
-  ctx.clearRect(0,0,c.width,c.height);
-
-  const scale = 1.1;
-  const ox = c.width/2, oy = 10;
-
-  // Draw rooms
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-  ctx.lineWidth = 1;
-  ROOMS.forEach(room => {
-    const x = ox - (room.width/2)*scale;
-    const y = oy + (-room.z)*scale;
-    const w = room.width*scale;
-    const h = room.depth*scale;
-    ctx.strokeRect(x, y, w, h);
-  });
-
-  // Room labels
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = '6px monospace';
-  ctx.textAlign = 'center';
-  ROOMS.forEach(room => {
-    const y = oy + (-room.z - room.depth/2)*scale;
-    ctx.fillText(room.id.toUpperCase().slice(0,3), ox, y+2);
-  });
-
-  // Current position
-  const vp = VIEWPOINTS[currentVP];
-  const px = ox + vp.pos[0]*scale;
-  const py = oy + (-vp.pos[2])*scale;
-  ctx.beginPath();
-  ctx.arc(px, py, 3, 0, Math.PI*2);
-  ctx.fillStyle = '#fff';
-  ctx.fill();
-  // Direction indicator
-  const lx = ox + vp.look[0]*scale;
-  const ly = oy + (-vp.look[2])*scale;
-  ctx.beginPath();
-  ctx.moveTo(px,py);
-  const angle = Math.atan2(ly-py, lx-px);
-  ctx.lineTo(px+Math.cos(angle)*8, py+Math.sin(angle)*8);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
-
-// ════════════════════════════════════════
-// EVENT HANDLERS
-// ════════════════════════════════════════
-
-// Nav arrows
-document.getElementById('nav-prev').addEventListener('click', () => { stopAutoTour(); goToViewpoint(currentVP - 1); });
-document.getElementById('nav-next').addEventListener('click', () => { stopAutoTour(); goToViewpoint(currentVP + 1); });
-
-// Keyboard
-document.addEventListener('keydown', e => {
-  if(e.key==='ArrowRight'||e.key==='d') { stopAutoTour(); goToViewpoint(currentVP+1); }
-  if(e.key==='ArrowLeft'||e.key==='a') { stopAutoTour(); goToViewpoint(currentVP-1); }
-  if(e.key==='Escape') hidePanel();
-});
-
-// Instructions
-document.getElementById('instructions').addEventListener('click', () => {
-  document.getElementById('instructions').classList.add('hidden');
-});
-
-// Auto tour
-function startAutoTour() {
-  autoTourActive = true;
-  document.getElementById('auto-tour').classList.add('active');
-  document.getElementById('auto-tour').textContent = 'Stop Tour';
-  advanceAutoTour();
-}
-function stopAutoTour() {
-  autoTourActive = false;
-  clearTimeout(autoTourTimer);
-  document.getElementById('auto-tour').classList.remove('active');
-  document.getElementById('auto-tour').textContent = 'Auto Tour';
-}
-function advanceAutoTour() {
-  if(!autoTourActive) return;
-  const next = currentVP + 1;
-  if(next >= VIEWPOINTS.length) { stopAutoTour(); return; }
-  goToViewpoint(next, 2.2);
-  const hasPanel = VIEWPOINTS[next].panel;
-  autoTourTimer = setTimeout(advanceAutoTour, hasPanel ? 6000 : 3500);
-}
-document.getElementById('auto-tour').addEventListener('click', () => {
-  if(autoTourActive) stopAutoTour();
-  else startAutoTour();
-});
-
-// Resize
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// ════════════════════════════════════════
-// ANIMATION LOOP
-// ════════════════════════════════════════
-const clock = new THREE.Clock();
-
-function animate() {
-  requestAnimationFrame(animate);
-  const t = clock.getElapsedTime();
-
-  controls.update();
-
-  // Rotate sculptures
-  sculptures.forEach((s,i) => {
-    s.rotation.y = t*0.2 + i*1.5;
-    s.rotation.x = Math.sin(t*0.15+i)*0.2;
-    s.position.y += Math.sin(t*0.6+i*2)*0.0008;
-  });
-
-  // Particles
-  const pa = particles.geometry.attributes.position.array;
-  for(let i=0;i<PC;i++){
-    pa[i*3]+=pv[i*3]; pa[i*3+1]+=pv[i*3+1]+Math.sin(t+i)*0.0002; pa[i*3+2]+=pv[i*3+2];
-    if(Math.abs(pa[i*3])>8) pv[i*3]*=-1;
-    if(pa[i*3+1]>4.5||pa[i*3+1]<0.2) pv[i*3+1]*=-1;
-  }
-  particles.geometry.attributes.position.needsUpdate = true;
-
-  renderer.render(scene, camera);
-}
-
-// ════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════
-controls.target.set(0, 1.65, -5);
-controls.update();
-updateUI();
-
-// Loader
-const fill = document.getElementById('load-fill');
-let lp = 0;
-const li = setInterval(() => {
-  lp += 12 + Math.random()*20;
-  if(lp>=100) { lp=100; clearInterval(li); fill.style.width='100%'; setTimeout(()=>document.getElementById('loader').classList.add('done'),500); }
-  fill.style.width = lp+'%';
-}, 200);
-
-animate();
+window.addEventListener('load',()=>ScrollTrigger.refresh());
+window.addEventListener('resize',()=>ScrollTrigger.refresh());
 </script>
 </body>
 </html>
