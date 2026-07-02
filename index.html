@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Noyonika Palit — Contemporary Art Practitioner</title>
+<title>Noyonika Palit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -11,455 +11,413 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <style>
-/* ═══════════════ TOKENS ═══════════════ */
 :root{
-  --paper:#f3f1ec;        /* gallery wall white */
-  --paper-2:#eceae4;      /* recessed panel */
-  --ink:#17140f;          /* near-black ink */
-  --ink-soft:#5c5851;     /* muted body */
-  --line:#d6d2c8;         /* hairline */
-  --accent:#8a4b2f;       /* terracotta — single warm accent */
+  --bg:#0c0c0c;
+  --fg:#e8e4de;
+  --mute:#6b6660;
+  --line:rgba(232,228,222,0.1);
+  --accent:#c4a882;
   --pad:clamp(20px,5vw,80px);
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-body{background:var(--paper);color:var(--ink);font-family:'Syne',sans-serif;overflow-x:hidden}
-body.lenis-stopped{overflow:hidden}
-::selection{background:var(--ink);color:var(--paper)}
+html{background:var(--bg);cursor:default}
+body{background:var(--bg);color:var(--fg);font-family:'Syne',sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+::selection{background:var(--fg);color:var(--bg)}
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
+button{all:unset;cursor:pointer}
 
-.serif{font-family:'Instrument Serif',serif;font-weight:400;font-synthesis:none}
-.mono{font-family:'Space Mono',monospace}
-.italic{font-style:italic}
+/* ── cursor dot ── */
+.cursor-dot{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--fg);pointer-events:none;z-index:9999;mix-blend-mode:difference;transition:transform .15s;transform:translate(-50%,-50%) scale(1)}
+.cursor-dot.grow{transform:translate(-50%,-50%) scale(4)}
+@media(pointer:coarse){.cursor-dot{display:none}}
 
-/* Grain overlay */
-#grain{position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:0.035;mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+/* ── image follower ── */
+#img-follower{position:fixed;top:0;left:0;width:min(420px,45vw);aspect-ratio:4/3;z-index:100;pointer-events:none;overflow:hidden;opacity:0;transform:scale(0.88);transition:opacity .35s cubic-bezier(.16,1,.3,1),transform .35s cubic-bezier(.16,1,.3,1)}
+#img-follower.visible{opacity:1;transform:scale(1)}
+#img-follower img{width:100%;height:100%;object-fit:cover;filter:contrast(1.04) brightness(0.95)}
 
-/* ═══════════════ LOADER ═══════════════ */
-#loader{position:fixed;inset:0;z-index:10000;background:var(--paper);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
-#loader .lname{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(34px,7vw,84px);color:var(--ink);overflow:hidden}
-#loader .lname span{display:inline-block}
-#loader .lbar{width:min(260px,60vw);height:1px;background:var(--line);position:relative;overflow:hidden}
-#loader .lbar i{position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:left}
-#loader .lmeta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:var(--ink-soft)}
+/* ── loader ── */
+#loader{position:fixed;inset:0;z-index:10000;background:var(--bg);display:flex;align-items:center;justify-content:center}
+#loader .inner{text-align:center}
+#loader .lname{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(36px,7vw,80px);overflow:hidden}
+#loader .lname span{display:inline-block;transform:translateY(110%)}
+#loader .lbar{width:min(200px,55vw);height:1px;background:var(--line);margin:24px auto 0;overflow:hidden}
+#loader .lbar i{display:block;width:100%;height:100%;background:var(--fg);transform:scaleX(0);transform-origin:left}
 
-/* ═══════════════ CHROME (fixed UI) ═══════════════ */
-.chrome{position:fixed;z-index:500;pointer-events:none}
-#brand{top:clamp(18px,3vw,34px);left:var(--pad)}
-#brand .n{font-family:'Instrument Serif',serif;font-style:italic;font-size:20px;line-height:1}
-#brand .r{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.28em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px}
-#topright{top:clamp(18px,3vw,34px);right:var(--pad);text-align:right;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-soft)}
-#topright #sec-name{color:var(--ink);display:block;margin-top:3px;font-size:11px;letter-spacing:0.16em}
+/* ── header ── */
+header{position:fixed;top:0;left:0;right:0;z-index:800;padding:0 var(--pad);height:72px;display:flex;align-items:center;justify-content:space-between;mix-blend-mode:difference}
+header .logo{font-family:'Instrument Serif',serif;font-style:italic;font-size:18px;color:#fff}
+header nav{display:flex;gap:clamp(18px,3vw,42px)}
+header nav a{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:#fff;position:relative;padding:4px 0}
+header nav a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:#fff;transition:width .35s cubic-bezier(.16,1,.3,1)}
+header nav a:hover::after{width:100%}
 
-/* progress rail */
-#rail{position:fixed;right:calc(var(--pad) - 6px);top:50%;transform:translateY(-50%);z-index:500;display:flex;flex-direction:column;gap:14px;pointer-events:auto}
-#rail button{all:unset;cursor:pointer;width:9px;height:9px;display:grid;place-items:center}
-#rail button i{width:5px;height:5px;border-radius:50%;background:var(--line);transition:all .4s}
-#rail button.on i{background:var(--ink);transform:scale(1.5)}
-@media(max-width:820px){#rail{display:none}}
+/* ── hero ── */
+#hero{height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 var(--pad) clamp(50px,10vh,100px);position:relative}
+#hero h1{font-family:'Instrument Serif',serif;font-weight:400;line-height:.88;letter-spacing:-.02em;font-size:clamp(60px,14vw,240px)}
+#hero h1 .ln{display:block;overflow:hidden}
+#hero h1 .ln span{display:inline-block}
+#hero h1 .it{font-style:italic}
+#hero .tagline{margin-top:clamp(16px,2.5vh,30px);display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px}
+#hero .tagline .left{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--mute);line-height:1.9}
+#hero .tagline .right{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--mute);text-align:right;line-height:1.8}
+#hero .scroll-line{position:absolute;bottom:0;left:50%;width:1px;height:60px;background:var(--line);overflow:hidden}
+#hero .scroll-line::after{content:'';position:absolute;top:-60px;left:0;width:100%;height:60px;background:var(--fg);animation:scrollpulse 2.4s ease-in-out infinite}
+@keyframes scrollpulse{0%{transform:translateY(0)}50%,100%{transform:translateY(120px)}}
 
-#scrollcue{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:500;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:8px;transition:opacity .5s}
-#scrollcue .ln{width:1px;height:34px;background:var(--line);position:relative;overflow:hidden}
-#scrollcue .ln::after{content:'';position:absolute;top:-34px;left:0;width:100%;height:34px;background:var(--ink);animation:cue 2.2s ease-in-out infinite}
-@keyframes cue{0%{transform:translateY(0)}60%,100%{transform:translateY(68px)}}
+/* ── section shared ── */
+.sec-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--mute);padding:clamp(60px,9vh,120px) var(--pad) clamp(28px,4vh,48px);border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
 
-/* ═══════════════ SECTIONS ═══════════════ */
-section{position:relative}
-.pane{min-height:100vh;padding:clamp(90px,12vh,150px) var(--pad) clamp(60px,8vh,110px);display:flex;flex-direction:column;justify-content:center}
-.eyebrow{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:12px;margin-bottom:28px}
-.eyebrow::before{content:'';width:34px;height:1px;background:var(--accent)}
-
-/* HERO */
-#hero{height:100vh;display:flex;align-items:center;overflow:hidden}
-#hero .wrap{width:100%;padding:0 var(--pad);position:relative;z-index:2}
-#hero .kick{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.32em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:min(4vh,34px)}
-#hero h1{font-family:'Instrument Serif',serif;font-weight:400;line-height:0.9;font-size:clamp(56px,15vw,220px);letter-spacing:-0.01em}
-#hero h1 .l2{font-style:italic;display:block;padding-left:0.12em}
-#hero .sub{margin-top:min(5vh,40px);max-width:520px;font-size:clamp(15px,1.6vw,18px);line-height:1.6;color:var(--ink-soft)}
-#hero .credit{position:absolute;right:var(--pad);bottom:0;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-soft);text-align:right;line-height:1.7}
-#hero .portrait{position:absolute;top:50%;right:8vw;transform:translateY(-50%);width:min(30vw,360px);aspect-ratio:3/4;overflow:hidden;z-index:1;opacity:0;filter:grayscale(1) contrast(1.05)}
-#hero .portrait img{width:100%;height:100%;object-fit:cover;transform:scale(1.15)}
-@media(max-width:900px){#hero .portrait{display:none}}
-
-/* STATEMENT */
-#statement .big{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,4.4vw,62px);line-height:1.2;max-width:16em}
-#statement .big .w{display:inline-block;opacity:0.12;transition:opacity .5s}
-#statement .big em{font-style:italic;color:var(--accent)}
-#statement .langs{margin-top:clamp(36px,6vh,72px);display:flex;gap:clamp(24px,5vw,64px);flex-wrap:wrap}
-#statement .langs div{border-top:1px solid var(--line);padding-top:14px}
-#statement .langs .k{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px}
-#statement .langs .v{font-family:'Instrument Serif',serif;font-style:italic;font-size:26px}
-
-/* ═══════════════ WORK — HORIZONTAL GALLERY ═══════════════ */
-#work-h{height:100vh;overflow:hidden}
-#work-track{display:flex;height:100vh;will-change:transform}
-.exhibit{flex:0 0 100vw;height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
-.exhibit .art{position:relative;overflow:hidden;background:var(--paper-2)}
-.exhibit .art img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.04);transform:scale(1.18);will-change:transform}
-.exhibit .art .tag{position:absolute;top:clamp(24px,4vw,48px);left:clamp(24px,4vw,48px);z-index:2;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.24em;text-transform:uppercase;color:var(--paper);mix-blend-mode:difference}
-.exhibit .art::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(0,0,0,0.25)}
-.exhibit .label{padding:clamp(40px,7vw,110px) clamp(30px,5vw,90px);display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--line)}
-.exhibit .acc{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);margin-bottom:22px;display:flex;justify-content:space-between}
-.exhibit h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(30px,3.6vw,54px);line-height:1.02;margin-bottom:10px}
-.exhibit .inst{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;letter-spacing:0.02em;text-transform:uppercase;margin-bottom:6px}
-.exhibit .place{font-family:'Space Mono',monospace;font-size:11px;color:var(--ink-soft);margin-bottom:26px}
-.exhibit ul{list-style:none;border-top:1px solid var(--line)}
-.exhibit li{padding:13px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.5;color:var(--ink-soft);display:flex;gap:14px}
-.exhibit li .no{font-family:'Space Mono',monospace;font-size:10px;color:var(--ink);flex-shrink:0;padding-top:2px}
-@media(max-width:820px){
-  .exhibit{grid-template-columns:1fr;grid-template-rows:42vh 1fr}
-  .exhibit .label{border-left:none;border-top:1px solid var(--line);padding:32px 24px}
-  .exhibit h3{font-size:30px}
+/* ── work list ── */
+#work{padding-bottom:clamp(60px,10vh,140px)}
+.work-row{border-bottom:1px solid var(--line);cursor:pointer;position:relative;overflow:hidden}
+.work-row .main{display:flex;align-items:baseline;padding:clamp(20px,3.2vh,38px) var(--pad);gap:clamp(14px,2.5vw,36px);transition:color .3s}
+.work-row:hover .main{color:var(--accent)}
+.work-row .idx{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);flex-shrink:0;width:32px;padding-top:0.15em;transition:color .3s}
+.work-row:hover .idx{color:var(--accent)}
+.work-row .name{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(28px,5.4vw,76px);line-height:1;flex:1;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+.work-row:hover .name{transform:translateX(12px)}
+.work-row .role{font-family:'Syne',sans-serif;font-weight:600;font-size:clamp(10px,1.1vw,13px);text-transform:uppercase;letter-spacing:.06em;color:var(--mute);flex-shrink:0;transition:color .3s}
+.work-row:hover .role{color:var(--accent)}
+.work-row .yr{font-family:'Space Mono',monospace;font-size:11px;color:var(--mute);flex-shrink:0;transition:color .3s}
+.work-row:hover .yr{color:var(--accent)}
+@media(max-width:700px){
+  .work-row .role,.work-row .yr{display:none}
+  .work-row .name{font-size:clamp(26px,8vw,44px)}
 }
 
-/* horizontal caption */
-#work-h .hcap{position:absolute;bottom:22px;left:var(--pad);z-index:5;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.26em;text-transform:uppercase;color:var(--ink-soft)}
+/* ── work detail (accordion) ── */
+.work-detail{max-height:0;overflow:hidden;transition:max-height .7s cubic-bezier(.16,1,.3,1)}
+.work-row.open .work-detail{max-height:700px}
+.work-detail-inner{padding:0 var(--pad) clamp(28px,4vh,48px);padding-left:calc(var(--pad) + 32px + clamp(14px,2.5vw,36px));display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,56px)}
+.work-detail-inner .d-place{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--mute);text-transform:uppercase;margin-bottom:18px}
+.work-detail-inner .d-notes{list-style:none}
+.work-detail-inner .d-notes li{padding:10px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.65;color:var(--mute);display:flex;gap:14px}
+.work-detail-inner .d-notes .n{font-family:'Space Mono',monospace;font-size:10px;color:var(--fg);flex-shrink:0;padding-top:2px}
+.work-detail-inner .d-img{overflow:hidden;max-height:260px}
+.work-detail-inner .d-img img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.04);transition:filter .5s,transform .5s}
+.work-detail-inner .d-img:hover img{filter:grayscale(0);transform:scale(1.03)}
+@media(max-width:700px){.work-detail-inner{grid-template-columns:1fr;padding-left:var(--pad)}}
 
-/* ═══════════════ EDUCATION ═══════════════ */
-#edu .grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
-#edu .cell{background:var(--paper);padding:clamp(30px,4vw,60px)}
-#edu .cell .yr{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.2em;color:var(--ink-soft);margin-bottom:20px}
-#edu .cell h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(26px,3vw,42px);line-height:1.05;margin-bottom:10px}
-#edu .cell .sch{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink-soft)}
-@media(max-width:820px){#edu .grid{grid-template-columns:1fr}}
+/* ── about ── */
+#about{padding:clamp(60px,10vh,140px) var(--pad)}
+#about .statement{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(24px,3.8vw,56px);line-height:1.18;max-width:18em}
+#about .statement em{font-style:italic;color:var(--accent)}
+#about .meta-row{display:flex;gap:clamp(32px,6vw,80px);flex-wrap:wrap;margin-top:clamp(40px,7vh,80px);padding-top:clamp(28px,4vh,48px);border-top:1px solid var(--line)}
+#about .meta-row .col .k{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
+#about .meta-row .col .v{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(20px,2.2vw,28px)}
 
-/* ═══════════════ CERTS + SKILLS ═══════════════ */
-#practice{background:var(--ink);color:var(--paper)}
-#practice .eyebrow{color:#c98f6f}#practice .eyebrow::before{background:#c98f6f}
-#practice .cols{display:grid;grid-template-columns:1fr 1.3fr;gap:clamp(40px,7vw,110px)}
-#practice h2{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:clamp(30px,4vw,58px);line-height:1.05;margin-bottom:34px}
-#practice .certs{list-style:none}
-#practice .certs li{padding:16px 0;border-top:1px solid rgba(243,241,236,0.14);display:flex;justify-content:space-between;gap:16px;align-items:baseline}
-#practice .certs li:last-child{border-bottom:1px solid rgba(243,241,236,0.14)}
-#practice .certs .c-name{font-family:'Instrument Serif',serif;font-size:22px}
-#practice .certs .c-meta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.14em;color:rgba(243,241,236,0.5);text-transform:uppercase;text-align:right;flex-shrink:0}
-#practice .skillhead{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.24em;text-transform:uppercase;color:rgba(243,241,236,0.5);margin-bottom:22px}
-#practice .skills{display:flex;flex-wrap:wrap;gap:10px}
-#practice .skills span{font-family:'Syne',sans-serif;font-weight:500;font-size:13px;padding:9px 16px;border:1px solid rgba(243,241,236,0.2);border-radius:100px;transition:all .35s;cursor:default}
-#practice .skills span:hover{background:var(--paper);color:var(--ink);border-color:var(--paper)}
-@media(max-width:820px){#practice .cols{grid-template-columns:1fr;gap:44px}}
+/* ── education ── */
+#edu{border-top:1px solid var(--line)}
+#edu .grid{display:grid;grid-template-columns:1fr 1fr}
+#edu .cell{padding:clamp(36px,6vh,72px) var(--pad);border-right:1px solid var(--line)}
+#edu .cell:last-child{border-right:none}
+#edu .cell .yr{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--mute);margin-bottom:18px}
+#edu .cell h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(24px,2.8vw,40px);line-height:1.05;margin-bottom:8px}
+#edu .cell .sch{font-family:'Syne',sans-serif;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute)}
+@media(max-width:700px){#edu .grid{grid-template-columns:1fr}#edu .cell{border-right:none;border-bottom:1px solid var(--line)}}
 
-/* ═══════════════ CONTACT ═══════════════ */
-#contact{min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(90px,12vh,150px) var(--pad) clamp(30px,5vh,60px)}
-#contact .lead{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(40px,9vw,150px);line-height:0.92;letter-spacing:-0.01em}
-#contact .lead em{font-style:italic;color:var(--accent)}
-#contact .rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:clamp(40px,6vh,70px)}
-#contact .rows a,#contact .rows div{background:var(--paper);padding:24px clamp(18px,2vw,30px);display:block;transition:background .3s}
-#contact .rows a:hover{background:var(--ink);color:var(--paper)}
-#contact .rows .k{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:10px}
-#contact .rows .v{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;word-break:break-word}
-#contact .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:40px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-soft)}
+/* ── credentials ── */
+#creds{border-top:1px solid var(--line);padding:clamp(60px,10vh,140px) var(--pad)}
+#creds .cols{display:grid;grid-template-columns:1fr 1.4fr;gap:clamp(32px,6vw,80px)}
+#creds h2{font-family:'Instrument Serif',serif;font-style:italic;font-weight:400;font-size:clamp(28px,3.8vw,52px);line-height:1.05;margin-bottom:clamp(24px,4vh,40px)}
+#creds .certs{list-style:none}
+#creds .certs li{padding:14px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+#creds .certs .c-name{font-family:'Instrument Serif',serif;font-size:20px}
+#creds .certs .c-meta{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.12em;color:var(--mute);text-transform:uppercase;text-align:right;flex-shrink:0}
+#creds .skillhead{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--mute);margin-bottom:20px}
+#creds .tags{display:flex;flex-wrap:wrap;gap:8px}
+#creds .tags span{font-size:12.5px;padding:8px 16px;border:1px solid var(--line);border-radius:100px;transition:all .35s;cursor:default;color:var(--mute)}
+#creds .tags span:hover{color:var(--fg);border-color:var(--fg)}
+@media(max-width:700px){#creds .cols{grid-template-columns:1fr;gap:44px}}
 
-.reveal{opacity:0;transform:translateY(28px)}
+/* ── contact ── */
+#contact{border-top:1px solid var(--line);min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(60px,10vh,120px) var(--pad) clamp(30px,4vh,50px)}
+#contact .cta{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(44px,10vw,160px);line-height:.9;letter-spacing:-.01em}
+#contact .cta em{font-style:italic;color:var(--accent)}
+#contact .cta a{position:relative;display:inline-block}
+#contact .cta a::after{content:'';position:absolute;bottom:0;left:0;width:100%;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+#contact .cta a:hover::after{transform:scaleX(1);transform-origin:left}
+#contact .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:clamp(40px,7vh,80px)}
+#contact .info-grid>*{background:var(--bg);padding:clamp(18px,2.5vw,28px);transition:background .3s}
+#contact .info-grid a:hover{background:#181715}
+#contact .info-grid .k{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute);margin-bottom:8px}
+#contact .info-grid .v{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;word-break:break-word}
+#contact .foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:clamp(40px,6vh,60px);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute)}
+
+/* ── reveal ── */
+.rv{opacity:0;transform:translateY(22px)}
 </style>
 </head>
-<body class="lenis-stopped">
+<body>
 
-<div id="grain"></div>
+<!-- Cursor -->
+<div class="cursor-dot" id="cursor"></div>
 
-<!-- LOADER -->
+<!-- Image follower -->
+<div id="img-follower"><img src="" alt=""></div>
+
+<!-- Loader -->
 <div id="loader">
-  <div class="lname" id="lname"></div>
-  <div class="lbar"><i></i></div>
-  <div class="lmeta">A Curated Exhibition</div>
+  <div class="inner">
+    <div class="lname"><span>N</span><span>o</span><span>y</span><span>o</span><span>n</span><span>i</span><span>k</span><span>a</span><span>&nbsp;</span><span>P</span><span>a</span><span>l</span><span>i</span><span>t</span></div>
+    <div class="lbar"><i></i></div>
+  </div>
 </div>
 
-<!-- CHROME -->
-<div class="chrome" id="brand">
-  <div class="n">Noyonika Palit</div>
-  <div class="r">Contemporary Art Practitioner</div>
-</div>
-<div class="chrome" id="topright">
-  <span id="sec-index">00 / 06</span>
-  <span id="sec-name">Entrance</span>
-</div>
-<div id="rail"></div>
-<div id="scrollcue"><span>Scroll</span><span class="ln"></span></div>
+<!-- Header -->
+<header>
+  <div class="logo">N.P.</div>
+  <nav>
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
 
-<!-- ░░ 01 HERO ░░ -->
-<section id="hero" data-name="Foyer">
-  <div class="portrait" id="portrait"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqWoPpl7BIygBCma2jQzwtyZQXc2hxSuvZk7qDron2xvKzCAcp9ALYhYaQ8kA5xCEsMoAv6UqtWRmhUhmqM8rDQYwrv2EAJX6ghTNCp_RKA_FNoopmmy1vKuWbjJoEfbCYCVtYB15JOKyH4jqieTVzA-ycuMqjr1otwLJNVQqo2QRt7uy7nSB5kye-CDcpZX-NwPGAnIxVqo28iGPMGoNPSHCuxEgHLOqcrMNMk8sOeTUh0P1sTxLTxsAAJw8A_gq0Iy1QEFX23JY" alt="Gallery"></div>
-  <div class="wrap">
-    <div class="kick">Bengaluru, India — Est. Practice 2021</div>
-    <h1><span class="l1">Noyonika</span><span class="serif italic l2">Palit</span></h1>
-    <p class="sub">A contemporary art practitioner working at the intersection of production and curation — across gallery spaces and large-scale platforms such as biennales.</p>
-    <div class="credit">Curatorial Practice<br>Gallery Operations<br>Public Engagement</div>
+<!-- Hero -->
+<section id="hero">
+  <h1>
+    <span class="ln"><span>Noyonika</span></span>
+    <span class="ln"><span class="it">Palit</span></span>
+  </h1>
+  <div class="tagline">
+    <div class="left">Contemporary Art Practitioner<br>Production &times; Curation</div>
+    <div class="right">Bengaluru, India<br>Available Worldwide</div>
+  </div>
+  <div class="scroll-line"></div>
+</section>
+
+<!-- Work -->
+<section id="work">
+  <div class="sec-label"><span>Selected Work</span><span>07 Positions</span></div>
+  <div id="work-list"></div>
+</section>
+
+<!-- About -->
+<section id="about">
+  <div class="sec-label" style="padding-left:0;padding-right:0;margin-bottom:clamp(32px,5vh,60px)"><span>About</span><span>Statement</span></div>
+  <p class="statement rv">I understand exhibitions not as displays, but as <em>processes</em> &mdash; involving coordination, spatial thinking, and audience engagement. My experience in gallery operations shaped how I approach the intersection of production and curation. I am drawn to how curatorial decisions and production frameworks influence the way art is <em>experienced</em>.</p>
+  <div class="meta-row rv">
+    <div class="col"><div class="k">Languages</div><div class="v">English, Bengali, Hindi</div></div>
+    <div class="col"><div class="k">Degree</div><div class="v">BFA, Contemporary Art Practices</div></div>
+    <div class="col"><div class="k">Focus</div><div class="v">Biennales &amp; Gallery Spaces</div></div>
   </div>
 </section>
 
-<!-- ░░ 02 STATEMENT ░░ -->
-<section id="statement" data-name="Statement">
-  <div class="pane">
-    <div class="eyebrow">Curatorial Statement</div>
-    <p class="big" id="stmt-text">I understand exhibitions not as displays, but as <em>processes</em> — involving coordination, spatial thinking, and audience engagement. I am drawn to how curatorial decisions and production frameworks shape the way art is <em>experienced</em>.</p>
-    <div class="langs">
-      <div><div class="k">Languages</div><div class="v serif italic">English</div></div>
-      <div><div class="k">·</div><div class="v serif italic">Bengali</div></div>
-      <div><div class="k">·</div><div class="v serif italic">Hindi</div></div>
-      <div><div class="k">Degree</div><div class="v serif italic">BFA, Contemporary Art</div></div>
+<!-- Education -->
+<section id="edu">
+  <div class="sec-label"><span>Education</span><span>02 Records</span></div>
+  <div class="grid">
+    <div class="cell rv">
+      <div class="yr">SEP 2021 &mdash; MAY 2022</div>
+      <h3>Bachelor of Fine Arts</h3>
+      <div class="sch">SMIADT &mdash; Srishti Manipal, Bangalore</div>
+    </div>
+    <div class="cell rv">
+      <div class="yr">MAR 2004 &mdash; MAR 2020</div>
+      <h3>High School Diploma</h3>
+      <div class="sch">Modern High School For Girls &mdash; Kolkata, WB</div>
     </div>
   </div>
 </section>
 
-<!-- ░░ 03 WORK — HORIZONTAL GALLERY ░░ -->
-<section id="work-h" data-name="Work History">
-  <div id="work-track">
-    <!-- exhibits injected by JS -->
-  </div>
-  <div class="hcap" id="hcap">Exhibit 01 — Gallery West Wing</div>
-</section>
-
-<!-- ░░ 04 EDUCATION ░░ -->
-<section id="edu" data-name="Education">
-  <div class="pane">
-    <div class="eyebrow">Provenance — Education</div>
-    <div class="grid">
-      <div class="cell reveal">
-        <div class="yr">SEP 2021 — MAY 2022</div>
-        <h3>Bachelor of Fine Arts<br><span class="italic serif" style="color:var(--accent)">Contemporary Art Practices</span></h3>
-        <div class="sch">SMIADT — Srishti Manipal, Bangalore</div>
-      </div>
-      <div class="cell reveal">
-        <div class="yr">MAR 2004 — MAR 2020</div>
-        <h3>High School Diploma</h3>
-        <div class="sch">Modern High School For Girls — Kolkata, WB</div>
-      </div>
+<!-- Credentials -->
+<section id="creds">
+  <div class="cols">
+    <div>
+      <h2 class="rv">Instruments<br>of practice.</h2>
+      <ul class="certs rv">
+        <li><span class="c-name">IELTS</span><span class="c-meta">Certified</span></li>
+        <li><span class="c-name">ICSE &mdash; ISC</span><span class="c-meta">Board</span></li>
+        <li><span class="c-name">Curatorial Internship</span><span class="c-meta">Experimenter &middot; Jul 2022</span></li>
+        <li><span class="c-name">Data Entry Course</span><span class="c-meta">Udemy &middot; Aug 2022</span></li>
+      </ul>
+    </div>
+    <div class="rv">
+      <div class="skillhead">Competencies &mdash; 14 Instruments</div>
+      <div class="tags" id="tags"></div>
     </div>
   </div>
 </section>
 
-<!-- ░░ 05 PRACTICE — CERTS + SKILLS ░░ -->
-<section id="practice" data-name="The Toolkit">
-  <div class="pane">
-    <div class="eyebrow">The Curator's Toolkit</div>
-    <div class="cols">
-      <div>
-        <h2>Instruments<br>of practice.</h2>
-        <ul class="certs">
-          <li><span class="c-name serif">IELTS</span><span class="c-meta">Certified</span></li>
-          <li><span class="c-name serif">ICSE — ISC</span><span class="c-meta">Board</span></li>
-          <li><span class="c-name serif">Curatorial Internship</span><span class="c-meta">Experimenter · Jul 2022</span></li>
-          <li><span class="c-name serif">Data Entry for Beginners</span><span class="c-meta">Udemy · Aug 2022</span></li>
-        </ul>
-      </div>
-      <div>
-        <div class="skillhead">Competencies — 14 instruments</div>
-        <div class="skills" id="skills"></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ░░ 06 CONTACT ░░ -->
-<section id="contact" data-name="Guestbook">
+<!-- Contact -->
+<section id="contact">
   <div>
-    <div class="eyebrow">The Guestbook</div>
-    <div class="lead">Let's <em>curate</em><br>something.</div>
+    <div class="sec-label" style="padding:0 0 clamp(28px,4vh,48px);border-bottom:none"><span>Contact</span><span>Let&rsquo;s connect</span></div>
+    <div class="cta rv"><a href="mailto:noyonikapalit2@gmail.com">Let&rsquo;s <em>curate</em><br>something.</a></div>
   </div>
   <div>
-    <div class="rows">
+    <div class="info-grid rv">
       <a href="mailto:noyonikapalit2@gmail.com"><div class="k">Email</div><div class="v">noyonikapalit2@gmail.com</div></a>
-      <a href="tel:9836050167"><div class="k">Telephone</div><div class="v">+91 983-605-0167</div></a>
+      <a href="tel:+919836050167"><div class="k">Phone</div><div class="v">+91 983-605-0167</div></a>
       <a href="https://linkedin.com/in/noyonika-palit-874a9b1bb" target="_blank"><div class="k">LinkedIn</div><div class="v">noyonika-palit</div></a>
       <a href="https://www.instagram.com/noyyarts/" target="_blank"><div class="k">Instagram</div><div class="v">@noyyarts</div></a>
-      <div><div class="k">Based In</div><div class="v">Bangalore, KA 560065</div></div>
+      <div><div class="k">Location</div><div class="v">Bangalore, KA 560065</div></div>
     </div>
     <div class="foot">
-      <span>© 2026 Noyonika Palit</span>
-      <span>Curated Portfolio Exhibition</span>
-      <span>End of Tour ✦</span>
+      <span>&copy; 2026 Noyonika Palit</span>
+      <span>Curated Portfolio</span>
     </div>
   </div>
 </section>
 
 <script>
-/* ═══════════════ DATA ═══════════════ */
-const IMG = {
+/* ═════════ DATA ═════════ */
+const IMG={
   science:'https://lh3.googleusercontent.com/aida-public/AB6AXuBqWoPpl7BIygBCma2jQzwtyZQXc2hxSuvZk7qDron2xvKzCAcp9ALYhYaQ8kA5xCEsMoAv6UqtWRmhUhmqM8rDQYwrv2EAJX6ghTNCp_RKA_FNoopmmy1vKuWbjJoEfbCYCVtYB15JOKyH4jqieTVzA-ycuMqjr1otwLJNVQqo2QRt7uy7nSB5kye-CDcpZX-NwPGAnIxVqo28iGPMGoNPSHCuxEgHLOqcrMNMk8sOeTUh0P1sTxLTxsAAJw8A_gq0Iy1QEFX23JY',
   amshu:'https://lh3.googleusercontent.com/aida-public/AB6AXuAAETmj8Wh9cMcmtQfuapyYJArQ7YhYaPKfLJUO0aM4Os74w_jAAlKgcYufJ6X7h0aTw5rO6yKXvbkAaCEBNdJfvGGQ-sXE26Rh_fuLebDpxkRyY1Bh1NVkAjaXwEsjGtx2ve5Jrq_rzWDY4GpHAbUih5G86rXhbLXHuSdWL1hmKYo0mYvVZgqQUNxAoF4IAzAjCX3BombmuIbNyNwnzeDoqw7aSynsCE9wS_es3Tz9emdV8BXWCI9IeEXFZBoSIJCm-1755TS5bRM',
   kochi:'https://lh3.googleusercontent.com/aida-public/AB6AXuD5bCcMU2b5qYfB-CDdU_ckHjnCqZu1iGUojGxoqzGRmBfTBLZNuaGwMaE-1LKlFkNP4Dt5Y1c41dxORfb5EI7v6AncWdVqcK0-XSfBYOdQ4Qxj2bfJKqrjGJIQQEMl0Bk2WL2oJdU0-AksFfFGYMD8cxzaA-X3Bqkqj4G9vr9aELVPzA4i8AWRe9mWQww0vWG4XjKOqcFwCWxHmQ1eF96pwQSEYbvO5QSuL5R9Fa4XCwfMniQD8dAPlgvr-2Uu2yqL5hZhH_rW8h4',
   experimenter:'https://lh3.googleusercontent.com/aida-public/AB6AXuC3KnLiGq3DUzKNPzfHvvFqxQZPfvCn9n40PpkEBV3y5aN3TuQ-jFhb27Aum9eTqV_UkMFLhN8sdKM2JhuwZxUijYpGfzc9SjmFbwR1tPWLjfcHq1k6qxFJCkUSmtgvYzTVAtN8vFnHb9VGP2EcPpRYMv6XOe3KMqSGeFPaHnTjdK1PBf3SKnqhPwQnxLbZMhLsm-3p3H4eTt5TdaZ8UHUICi-5fDNbZCWH8aYNwT8dqmwj-1cxGYOzFP4HhK9vlIFaVx6PJMINUhOjU',
-  toolkit:'https://lh3.googleusercontent.com/aida-public/AB6AXuBKRnXN2Q5lNFJvECiAX_jOqT3GzK6_6-TuSLo15mZqZy83AE-n7KxupR4ESjgebN5jvDzRYPhYKDIogywP6CYSMCSLiTeQZKT52xs6cxheqoDmU8s52PNhVmr2JWTqN3Zv7JiMCxxe1hPs56lwm7weiONHWIJK_q6BFTvRdDWxgB6yJyTdO-yloiC-2In_r7yessFt5dqPiJiOjEwR34MsGCMPsmwHigdT2ioy6W5sIpkAViunXOF2km3c_sevzjtuKimi3E1daBU',
-  floorplan:'https://lh3.googleusercontent.com/aida-public/AB6AXuAiR1J-DNARqSWr_OSm0UM51YZwoBS-whFg_zKOS3bHpCLtp3FK3ccOKms2nj4j6HRvTi1iMM-vU2BcRrbZQVkq1XdfVswgHzKLOJXT8047z9TtwNHMKjVr3W3HCU8tI488-9SyU4_NVIf931dBgISWCkw22QKb-acwCo3ENv1xO9zSW-ADuRpKUg4XeRrY2u7oSvvU_zWTTBPtcA7m7yhfah8kTw6YdQvWChSjF8VmCUmqrucfdc3XcC4aFjNtkioDjcNasW7ibWs',
-  mumbai:'https://lh3.googleusercontent.com/aida-public/AB6AXuBti4vqNkjmENZj380eMoP_2-oQvvEPsibR4DY_JGbwuHVKxSuV5ZycDrVZZQiYuwSep1cn-ySmBrw6InW9yD5VacgVRdWMdO6n7Y-7VLTzRFWXHb0FRlrXl6V05hhYWegm6Ex6bLRoUxMsg6pzXWdssjdR07ayau0Zwwq1w8ylRvvcfs_cqxP04tKGNeBGhERvgO0n8o1V10wb5EHtvsoPnlI4Or9Irlo1oxrzQs89yIWXIw2Mu8NeJj9o_zUkbVyUFxvRQIlDxW4',
+  glamour:'https://lh3.googleusercontent.com/aida-public/AB6AXuBKRnXN2Q5lNFJvECiAX_jOqT3GzK6_6-TuSLo15mZqZy83AE-n7KxupR4ESjgebN5jvDzRYPhYKDIogywP6CYSMCSLiTeQZKT52xs6cxheqoDmU8s52PNhVmr2JWTqN3Zv7JiMCxxe1hPs56lwm7weiONHWIJK_q6BFTvRdDWxgB6yJyTdO-yloiC-2In_r7yessFt5dqPiJiOjEwR34MsGCMPsmwHigdT2ioy6W5sIpkAViunXOF2km3c_sevzjtuKimi3E1daBU',
+  srishti:'https://lh3.googleusercontent.com/aida-public/AB6AXuAiR1J-DNARqSWr_OSm0UM51YZwoBS-whFg_zKOS3bHpCLtp3FK3ccOKms2nj4j6HRvTi1iMM-vU2BcRrbZQVkq1XdfVswgHzKLOJXT8047z9TtwNHMKjVr3W3HCU8tI488-9SyU4_NVIf931dBgISWCkw22QKb-acwCo3ENv1xO9zSW-ADuRpKUg4XeRrY2u7oSvvU_zWTTBPtcA7m7yhfah8kTw6YdQvWChSjF8VmCUmqrucfdc3XcC4aFjNtkioDjcNasW7ibWs',
+  signa:'https://lh3.googleusercontent.com/aida-public/AB6AXuBti4vqNkjmENZj380eMoP_2-oQvvEPsibR4DY_JGbwuHVKxSuV5ZycDrVZZQiYuwSep1cn-ySmBrw6InW9yD5VacgVRdWMdO6n7Y-7VLTzRFWXHb0FRlrXl6V05hhYWegm6Ex6bLRoUxMsg6pzXWdssjdR07ayau0Zwwq1w8ylRvvcfs_cqxP04tKGNeBGhERvgO0n8o1V10wb5EHtvsoPnlI4Or9Irlo1oxrzQs89yIWXIw2Mu8NeJj9o_zUkbVyUFxvRQIlDxW4',
 };
-
-const WORK = [
-  { acc:'SGB · 2025', wing:'West Wing', img:IMG.science, role:'Public Engagement', inst:'Science Gallery Bengaluru', place:'Bengaluru, India — Jun 2025 – Current',
-    notes:['Led targeted outreach for diverse publics; conducted 10,000+ conversations spanning the natural and social sciences.',
-           'Facilitated walk-throughs for the current exhibition season, ‘Calorie’, and student programmes.',
-           'Assisted the production team with install, de-install and maintenance of exhibits; met artists on a curatorial level.'] },
-  { acc:'AC · 2024', wing:'Studio', img:IMG.amshu, role:'Art Assistant', inst:'Amshu Chukki (Remote)', place:'Bangalore, India — Jan 2024 – Jun 2025',
-    notes:['Assisted grant-proposal writing, securing additional funding for future projects.',
-           'Managed multiple tasks and deadlines, improving project timelines and workflow.',
-           'Increased artist exposure via submissions to galleries, competitions and publications.'] },
-  { acc:'KSB · 2022', wing:'North Hall', img:IMG.kochi, role:'Curatorial Fellow', inst:'Kochi Students Biennale ’22–23', place:'Kochi, India — Sep 2022 – Nov 2022',
-    notes:['Curatorial Assistant to KSB curator Afrah Shafiq; co-curator to artists across Karnataka, Tamil Nadu, Pondicherry and Goa.',
-           'Drafted label texts and catalog essays; organised exhibition files, databases and lender communications.',
-           'Co-curated workshops in Goa and Karnataka alongside Afrah Shafiq and Amshu Chukki.'] },
-  { acc:'EXP · 2022', wing:'East Room', img:IMG.experimenter, role:'Curatorial Intern', inst:'Experimenter, Kolkata', place:'Kolkata, WB — Jul 2022',
-    notes:['Transcribed an artist talk with cloth-maker Kallol Datta for his solo, Volume 3 || Issue 2.',
-           'Job-shadowed the install of the late Kanishka Raja’s paintings; managed a mailing list of 600+ recipients.',
-           'Sat in on meetings with Bani Abidi, Radhika Khimji, Alexandra Bachzetsis and Praneet Soi.'] },
-  { acc:'GB · 2022', wing:'Print Room', img:IMG.toolkit, role:'Freelance Artist', inst:'Glamour Boutique, Kolkata', place:'Kolkata, WB — Jul 2022',
-    notes:['Illustrated pen-and-ink works for an upcoming saree collection.',
-           'Designed custom artwork to clients’ creative vision; conducted workshops for aspiring artists.',
-           'Promoted the practice across social platforms, engaging clients and collaborators.'] },
-  { acc:'SM · 2021', wing:'Atrium', img:IMG.floorplan, role:'Exhibiting Team', inst:'Srishti-Manipal Open House ’21', place:'Bengaluru, IN — Apr 2022',
-    notes:['Prioritised tasks and prepared written communications, reports and documents.',
-           'Used critical thinking to break down problems, evaluate solutions and decide.',
-           'Delivered within tight deadlines across a fast-paced, collaborative environment.'] },
-  { acc:'SD · 2021', wing:'Annexe', img:IMG.mumbai, role:'Design Collaborator', inst:'Signa Design — Rashmin Perla', place:'Kolkata, IN — Jul 2021 – Aug 2021',
-    notes:['Combined visual-art skills with interior design in an interdisciplinary practice.',
-           'Collaborated to achieve target results and resolve issues, lifting client satisfaction.',
-           'Learned and applied new skills quickly to improve day-to-day efficiency.'] },
+const WORK=[
+  {name:'Science Gallery Bengaluru',role:'Public Engagement',yr:'2025',img:IMG.science,place:'Bengaluru, India — Jun 2025 – Current',
+   notes:['Led targeted outreach for diverse publics; conducted 10,000+ conversations spanning the natural and social sciences.',
+          'Facilitated walk-throughs for the current exhibition season ‘Calorie’, and student programmes.',
+          'Assisted production team with install, de-install and maintenance of exhibits; met artists on a curatorial level.',
+          'Developed creative interventions catered to individual learning styles for maximum engagement.',
+          'Contributed to social media content creation for the gallery’s public channels.']},
+  {name:'Amshu Chukki',role:'Art Assistant',yr:'2024–25',img:IMG.amshu,place:'India (Remote) — Jan 2024 – Jun 2025',
+   notes:['Assisted grant-proposal writing, securing additional funding for future projects.',
+          'Managed multiple tasks and deadlines, improving project timelines and workflow.',
+          'Increased artist exposure via submissions to galleries, competitions and publications.']},
+  {name:'Kochi Students Biennale',role:'Curatorial Fellow',yr:'2022',img:IMG.kochi,place:'Kochi, India — Sep – Nov 2022',
+   notes:['Curatorial Assistant to KSB curator Afrah Shafiq; co-curator to artists across Karnataka, Tamil Nadu, Pondicherry and Goa.',
+          'Drafted label texts and catalog essays; organised exhibition files, databases and lender communications.',
+          'Co-curated workshops in Goa and Karnataka alongside Afrah Shafiq and Amshu Chukki.',
+          'Managed resources including personnel, equipment, budgets, bills and travel itineraries.']},
+  {name:'Experimenter Kolkata',role:'Curatorial Intern',yr:'2022',img:IMG.experimenter,place:'Kolkata, WB — Jul 2022',
+   notes:['Transcribed an artist talk with cloth-maker Kallol Datta for his solo, Volume 3 || Issue 2.',
+          'Job-shadowed the install of the late Kanishka Raja’s paintings; managed a mailing list of 600+ recipients.',
+          'Sat in on meetings with Bani Abidi, Radhika Khimji, Alexandra Bachzetsis and Praneet Soi.',
+          'Onboarded by co-founder Priyanka Raja.']},
+  {name:'Glamour Boutique',role:'Freelance Artist',yr:'2022',img:IMG.glamour,place:'Kolkata, WB — Jul 2022',
+   notes:['Illustrated pen-and-ink works for an upcoming saree collection.',
+          'Designed custom artwork to clients’ creative vision; conducted workshops for aspiring artists.']},
+  {name:'Srishti Open House',role:'Exhibiting Team',yr:'2022',img:IMG.srishti,place:'Bengaluru, IN — Apr 2022',
+   notes:['Prioritised tasks and prepared written communications, reports and documents.',
+          'Delivered within tight deadlines across a fast-paced, collaborative environment.']},
+  {name:'Signa Design',role:'Design Collaborator',yr:'2021',img:IMG.signa,place:'Kolkata, IN — Jul – Aug 2021',
+   notes:['Combined visual-art skills with interior design in an interdisciplinary practice.',
+          'Collaborated with Rashmin Perla to achieve target results and resolve issues.']},
 ];
+const SKILLS=['Public Engagement','Planning & Coordination','Critical Thinking','Written Communication','Documentation & Reporting','Office Administration','Interpersonal Communication','Operations & Efficiency','Spreadsheet Creation','Spreadsheet Tracking','Internal Communications','Teamwork & Collaboration','Time Management','Telephone Etiquette'];
 
-const SKILLS = ['Public Engagement','Planning & Coordination','Critical Thinking','Written Communication','Documentation & Reporting','Office Administration','Interpersonal Communication','Operations & Efficiency','Spreadsheet Creation','Spreadsheet Tracking','Internal Communications','Teamwork & Collaboration','Time Management','Telephone Etiquette'];
-
-/* ═══════════════ BUILD WORK EXHIBITS ═══════════════ */
-const track = document.getElementById('work-track');
+/* ═════════ BUILD DOM ═════════ */
+const wl=document.getElementById('work-list');
 WORK.forEach((w,i)=>{
-  const el = document.createElement('article');
-  el.className='exhibit';
-  el.innerHTML = `
-    <div class="art">
-      <span class="tag">${w.acc} · ${w.wing}</span>
-      <img src="${w.img}" alt="${w.role}" loading="lazy">
+  const d=document.createElement('div');
+  d.className='work-row';
+  d.dataset.img=w.img;
+  d.innerHTML=`
+    <div class="main">
+      <span class="idx">${String(i+1).padStart(2,'0')}</span>
+      <span class="name">${w.name}</span>
+      <span class="role">${w.role}</span>
+      <span class="yr">${w.yr}</span>
     </div>
-    <div class="label">
-      <div class="acc"><span>Exhibit ${String(i+1).padStart(2,'0')} / ${String(WORK.length).padStart(2,'0')}</span><span>${w.acc}</span></div>
-      <h3>${w.role}</h3>
-      <div class="inst">${w.inst}</div>
-      <div class="place">${w.place}</div>
-      <ul>${w.notes.map((n,j)=>`<li><span class="no">0${j+1}</span><span>${n}</span></li>`).join('')}</ul>
+    <div class="work-detail">
+      <div class="work-detail-inner">
+        <div>
+          <div class="d-place">${w.place}</div>
+          <ul class="d-notes">${w.notes.map((n,j)=>`<li><span class="n">0${j+1}</span><span>${n}</span></li>`).join('')}</ul>
+        </div>
+        <div class="d-img"><img src="${w.img}" alt="${w.name}" loading="lazy"></div>
+      </div>
     </div>`;
-  track.appendChild(el);
+  wl.appendChild(d);
 });
 
-/* skills */
-const skl = document.getElementById('skills');
-SKILLS.forEach(s=>{ const sp=document.createElement('span'); sp.textContent=s; skl.appendChild(sp); });
+const tags=document.getElementById('tags');
+SKILLS.forEach(s=>{const sp=document.createElement('span');sp.textContent=s;tags.appendChild(sp);});
 
-/* wrap statement words for reveal */
-(function(){
-  const el=document.getElementById('stmt-text');
-  const walk=(node)=>{
-    const kids=[...node.childNodes];
-    kids.forEach(n=>{
-      if(n.nodeType===3){
-        const frag=document.createDocumentFragment();
-        n.textContent.split(/(\s+)/).forEach(tok=>{
-          if(tok.trim()){const s=document.createElement('span');s.className='w';s.textContent=tok;frag.appendChild(s);}
-          else frag.appendChild(document.createTextNode(tok));
-        });
-        node.replaceChild(frag,n);
-      } else if(n.nodeType===1){ n.classList.add('w'); }
-    });
-  };
-  walk(el);
-})();
+/* ═════════ CURSOR ═════════ */
+const cur=document.getElementById('cursor');
+let cx=0,cy=0,dx=0,dy=0;
+document.addEventListener('mousemove',e=>{cx=e.clientX;cy=e.clientY;});
+(function moveCur(){dx+=(cx-dx)*.15;dy+=(cy-dy)*.15;cur.style.left=dx+'px';cur.style.top=dy+'px';requestAnimationFrame(moveCur)})();
+document.querySelectorAll('a,button,.work-row').forEach(el=>{
+  el.addEventListener('mouseenter',()=>cur.classList.add('grow'));
+  el.addEventListener('mouseleave',()=>cur.classList.remove('grow'));
+});
 
-/* ═══════════════ LENIS + GSAP ═══════════════ */
+/* ═════════ IMAGE FOLLOWER ═════════ */
+const follower=document.getElementById('img-follower');
+const fImg=follower.querySelector('img');
+let fx=0,fy=0,mx=0,my=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function moveF(){fx+=(mx-fx)*.08;fy+=(my-fy)*.08;follower.style.transform=`translate(${fx-follower.offsetWidth/2}px,${fy-follower.offsetHeight/2}px)`;requestAnimationFrame(moveF)})();
+
+document.querySelectorAll('.work-row').forEach(row=>{
+  row.addEventListener('mouseenter',()=>{fImg.src=row.dataset.img;follower.classList.add('visible');});
+  row.addEventListener('mouseleave',()=>{follower.classList.remove('visible');});
+  row.querySelector('.main').addEventListener('click',()=>{
+    const wasOpen=row.classList.contains('open');
+    document.querySelectorAll('.work-row.open').forEach(r=>r.classList.remove('open'));
+    if(!wasOpen) row.classList.add('open');
+  });
+});
+
+/* ═════════ SMOOTH SCROLL NAV ═════════ */
+document.querySelectorAll('header nav a').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    const target=document.querySelector(a.getAttribute('href'));
+    if(target&&window.lenis) window.lenis.scrollTo(target,{offset:-40});
+  });
+});
+
+/* ═════════ LENIS + GSAP ═════════ */
 gsap.registerPlugin(ScrollTrigger);
-let lenis;
-let booted=false;
 
 function boot(){
-  if(booted) return; booted=true;
-  lenis = new Lenis({ duration:1.15, easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)), smoothWheel:true, touchMultiplier:1.4 });
-  lenis.on('scroll', ScrollTrigger.update);
+  const lenis=new Lenis({duration:1.1,easing:t=>Math.min(1,1.001-Math.pow(2,-10*t)),smoothWheel:true});
+  window.lenis=lenis;
+  lenis.on('scroll',ScrollTrigger.update);
   gsap.ticker.add(t=>lenis.raf(t*1000));
   gsap.ticker.lagSmoothing(0);
 
-  /* HERO intro */
-  const htl = gsap.timeline({defaults:{ease:'power4.out'}});
-  htl.from('#hero .kick',{y:20,opacity:0,duration:0.8})
-     .from('#hero h1 .l1',{yPercent:110,opacity:0,duration:1.1},'-=0.5')
-     .from('#hero h1 .l2',{yPercent:110,opacity:0,duration:1.1},'-=0.9')
-     .from('#hero .sub',{y:24,opacity:0,duration:0.9},'-=0.7')
-     .from('#hero .credit',{opacity:0,duration:0.8},'-=0.6')
-     .to('#portrait',{opacity:1,duration:1.2},'-=1.0')
-     .to('#portrait img',{scale:1,duration:1.6,ease:'power2.out'},'-=1.2');
+  /* hero intro */
+  const htl=gsap.timeline({defaults:{ease:'power4.out'}});
+  htl.from('#hero h1 .ln:first-child span',{yPercent:110,duration:1.2,delay:.2})
+     .from('#hero h1 .ln:last-child span',{yPercent:110,duration:1.2},'-=.95')
+     .from('#hero .tagline .left',{y:18,opacity:0,duration:.7},'-=.6')
+     .from('#hero .tagline .right',{y:18,opacity:0,duration:.7},'-=.55')
+     .from('#hero .scroll-line',{scaleY:0,transformOrigin:'top',duration:.7},'-=.4');
 
-  /* HERO parallax out */
-  gsap.to('#hero h1',{yPercent:-14,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
-  gsap.to('#portrait',{yPercent:12,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
+  /* hero parallax */
+  gsap.to('#hero h1',{yPercent:-10,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
 
-  /* STATEMENT word reveal */
-  gsap.to('#stmt-text .w',{opacity:1,stagger:0.03,ease:'none',
-    scrollTrigger:{trigger:'#statement',start:'top 62%',end:'center 45%',scrub:true}});
+  /* work rows stagger */
+  gsap.from('.work-row',{opacity:0,y:20,stagger:.06,duration:.7,ease:'power3.out',
+    scrollTrigger:{trigger:'#work',start:'top 75%'}});
 
-  /* ── WORK: horizontal gallery ── */
-  const distance = ()=> track.scrollWidth - window.innerWidth;
-  const hMove = gsap.to(track,{ x:()=>-distance(), ease:'none',
-    scrollTrigger:{ trigger:'#work-h', start:'top top', end:()=>'+='+distance(),
-      pin:true, scrub:1, invalidateOnRefresh:true,
-      onUpdate:self=>{
-        const idx=Math.min(WORK.length, Math.floor(self.progress*WORK.length)+1);
-        document.getElementById('hcap').textContent=`Exhibit ${String(idx).padStart(2,'0')} — ${WORK[idx-1]?.wing||''} `;
-      }
-    }});
-  /* per-exhibit image parallax + label rise, tied to horizontal scroll */
-  gsap.utils.toArray('.exhibit').forEach(ex=>{
-    const img=ex.querySelector('.art img');
-    gsap.fromTo(img,{scale:1.18,xPercent:-4},{scale:1.02,xPercent:4,ease:'none',
-      scrollTrigger:{trigger:ex,containerAnimation:hMove,start:'left right',end:'right left',scrub:true}});
-    gsap.from(ex.querySelector('.label'),{opacity:0,y:40,
-      scrollTrigger:{trigger:ex,containerAnimation:hMove,start:'left 75%',end:'left 30%',scrub:true}});
-  });
-
-  /* generic reveals */
-  gsap.utils.toArray('.reveal').forEach(el=>{
+  /* reveals */
+  gsap.utils.toArray('.rv').forEach(el=>{
     gsap.to(el,{opacity:1,y:0,duration:1,ease:'power3.out',
       scrollTrigger:{trigger:el,start:'top 82%'}});
   });
-  gsap.from('#practice .skills span',{opacity:0,y:16,stagger:0.04,duration:0.6,ease:'power2.out',
-    scrollTrigger:{trigger:'#practice .skills',start:'top 78%'}});
-  gsap.from('#practice .certs li',{opacity:0,x:-20,stagger:0.08,duration:0.7,ease:'power3.out',
-    scrollTrigger:{trigger:'#practice .certs',start:'top 78%'}});
-  gsap.from('#contact .lead',{opacity:0,y:40,duration:1.1,ease:'power4.out',
-    scrollTrigger:{trigger:'#contact',start:'top 65%'}});
-  gsap.from('#contact .rows a, #contact .rows div',{opacity:0,y:20,stagger:0.06,duration:0.6,
-    scrollTrigger:{trigger:'#contact .rows',start:'top 82%'}});
-
-  /* ── section tracker for chrome ── */
-  const sections=[...document.querySelectorAll('section[data-name]')];
-  const rail=document.getElementById('rail');
-  sections.forEach((s,i)=>{
-    const b=document.createElement('button'); b.innerHTML='<i></i>';
-    b.addEventListener('click',()=>lenis.scrollTo(s,{offset:0}));
-    rail.appendChild(b);
-    ScrollTrigger.create({trigger:s,start:'top 55%',end:'bottom 55%',
-      onToggle:self=>{ if(self.isActive){
-        document.getElementById('sec-index').textContent=String(i).padStart(2,'0')+' / '+String(sections.length-1).padStart(2,'0');
-        document.getElementById('sec-name').textContent=s.dataset.name;
-        [...rail.children].forEach((c,ci)=>c.classList.toggle('on',ci===i));
-      }}});
-  });
-
-  /* hide scroll cue after first scroll */
-  ScrollTrigger.create({start:'top -80',onToggle:self=>{document.getElementById('scrollcue').style.opacity=self.isActive?0:1;}});
+  gsap.from('#creds .tags span',{opacity:0,y:14,stagger:.03,duration:.5,ease:'power2.out',
+    scrollTrigger:{trigger:'#creds .tags',start:'top 80%'}});
+  gsap.from('#creds .certs li',{opacity:0,x:-16,stagger:.06,duration:.5,ease:'power3.out',
+    scrollTrigger:{trigger:'#creds .certs',start:'top 80%'}});
 
   ScrollTrigger.refresh();
 }
 
-/* ═══════════════ LOADER ═══════════════ */
+/* ═════════ LOADER ═════════ */
 (function(){
-  const name='Noyonika Palit';
-  const host=document.getElementById('lname');
-  name.split('').forEach(ch=>{const s=document.createElement('span');s.textContent=ch===' '?' ':ch;s.style.opacity=0;host.appendChild(s);});
   const tl=gsap.timeline();
-  tl.to('#lname span',{opacity:1,y:0,stagger:0.035,duration:0.5,ease:'power2.out'})
-    .to('#loader .lbar i',{scaleX:1,duration:1.0,ease:'power2.inOut'},'-=0.3')
-    .to('#loader',{yPercent:-100,duration:1.0,ease:'power4.inOut',delay:0.2,
-      onComplete:()=>{document.getElementById('loader').remove();document.body.classList.remove('lenis-stopped');}});
+  tl.to('#loader .lname span',{y:0,stagger:.03,duration:.5,ease:'power2.out',delay:.15})
+    .to('#loader .lbar i',{scaleX:1,duration:.8,ease:'power2.inOut'},'-=.2')
+    .to('#loader',{yPercent:-100,duration:.9,ease:'power4.inOut',delay:.15,onComplete:()=>document.getElementById('loader').remove()});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
   else boot();
 })();
-
 window.addEventListener('load',()=>ScrollTrigger.refresh());
 window.addEventListener('resize',()=>ScrollTrigger.refresh());
 </script>
